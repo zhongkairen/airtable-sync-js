@@ -1,4 +1,4 @@
-import { UserToken } from './user_token';
+import { UserToken } from '../user-token';
 
 interface ConfigJson {
     baseId?: string;
@@ -27,12 +27,12 @@ class AirtableConfig {
             // Environment variable names for the token
             token: 'AIRTABLE_TOKEN',
             // Environment variable names for the token file path
-            token_path: 'AIRTABLE_TOKEN_PATH',
+            tokenPath: 'AIRTABLE_TOKEN_PATH',
 
             // Key name in the config.json for the token
-            config_token: 'token',
+            configToken: 'token',
             // Key name in the config.json for the token file path
-            config_token_path: 'token_path',
+            configTokenPath: 'tokenPath',
         };
 
         // Load a token from environment variable or configuration, either directly or from a file.

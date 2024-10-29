@@ -3,9 +3,9 @@ import * as os from 'os';
 
 interface Names {
     token?: string;
-    token_path?: string;
-    config_token?: string;
-    config_token_path?: string;
+    tokenPath?: string;
+    configToken?: string;
+    configTokenPath?: string;
 }
 
 class UserToken {
@@ -26,14 +26,14 @@ class UserToken {
          * @throws {Error} If neither the token path nor the token is set in the environment.
          */
         const token = names.token;
-        const tokenPath = names.token_path;
+        const tokenPath = names.tokenPath;
 
         this.token = token ? process.env[token] : undefined;
         this.tokenPath = tokenPath ? process.env[tokenPath] : undefined;
 
         if (!this.tokenPath && !this.token) {
-            const configToken = names.config_token;
-            const configTokenPath = names.config_token_path;
+            const configToken = names.configToken;
+            const configTokenPath = names.configTokenPath;
 
             this.token = configToken ? fallback[configToken] : undefined;
             this.tokenPath = configTokenPath ? fallback[configTokenPath] : undefined;

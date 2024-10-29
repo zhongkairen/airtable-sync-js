@@ -29,7 +29,7 @@ export class GitHubConfig {
             token: 'GITHUB_TOKEN',
             tokenPath: 'GITHUB_TOKEN_PATH',
             configToken: 'token',
-            configTokenPath: 'token_path',
+            configTokenPath: 'tokenPath',
         };
 
         // Load a token from environment variable or configuration, either directly or from a file.

@@ -1,0 +1,27 @@
+{
+  "_comment.airtable": "This is an example configuration",
+  "airtable": {
+    "baseId": "appA1B2CDE5F6G7H8<your airtable base id>",
+    "tableId": "tblI9J0K1L2M3N4c6<your airtable table id>",
+    "_comment.viewName": "optional viewName in the table",
+    "viewName": "Your team view",
+    "_comment.token": "optional access token (fallback to AIRTABLE_TOKEN env)",
+    "token": "patEzF45bYN4571Oh.<your airtable token>",
+    "_comment.tokenPath": "optional token path (fallback to AIRTABLE_TOKEN_PATH env)",
+    "tokenPath": "/path/to/airtable_token"
+  },
+  "github": {
+    "owner": "Your-Organization",
+    "repo": "your-team-repo",
+    "project": "Your Team Project",
+    "_comment.fieldMap": "mapping from github field to airtable field",
+    "fieldMap": {
+      "Start Date": "Engineering Start Date",
+      "Delivery Date": "Engineering Delivery Date"
+    },
+    "_comment.token": "optional access token (fallback to GITHUB_TOKEN env)",
+    "token": "ghp_42m57hH6FX6<your github token>",
+    "_comment.tokenPath": "optional token path (fallback to GITHUB_TOKEN_PATH env)",
+    "tokenPath": "/path/to/github_token"
+  }
+}

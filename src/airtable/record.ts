@@ -1,6 +1,6 @@
 import { URL } from 'url';
 import { CustomLogger } from '../custom-logger';
-import { RecordDict } from 'pyairtable/api/types';
+import { RecordDict } from 'pyairtable/api/types'; // todo: find equivalent library
 
 const logger = new CustomLogger(__filename);
 

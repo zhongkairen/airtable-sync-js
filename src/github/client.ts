@@ -1,4 +1,4 @@
-import { GraphqlClient } from 'graphql-request';
+import { GraphqlClient } from 'graphql-request'; // todo: find equivalent library
 import { GitHubConfig } from './config';
 import { GraphQLQuery } from './graphql-query';
 import { GitHubIssue } from './issue';

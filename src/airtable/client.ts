@@ -1,7 +1,7 @@
-import { Api } from 'pyairtable';
+import { Api } from 'pyairtable'; // todo: find equivalent library
 import { AirtableConfig } from './config';
-import { UpdateResult } from './update_result';
-import { CustomLogger } from '../custom_logger';
+import { UpdateResult, UpdateStatus } from './update-result';
+import { CustomLogger } from '../custom-logger';
 import { AirtableRecord } from './record';
 
 const logger = new CustomLogger(__filename);
@@ -81,14 +81,14 @@ export class AirtableClient {
             const context: { [key: string]: any } = { id: recordId, issue_number: issueNumber };
             let changes: any = null;
             let error: any = null;
-            let status: UpdateResult.Status;
+            let status: UpdateStatus;
 
             if (!record) {
                 error = `record ${recordId} not found`;
-                status = UpdateResult.Status.FAILED;
+                status = UpdateStatus.FAILED;
             } else {
                 [changes, error] = record.commitChanges(updatedRecord);
-                status = changes ? UpdateResult.Status.UPDATED : error ? UpdateResult.Status.FAILED : UpdateResult.Status.UNCHANGED;
+                status = changes ? UpdateStatus.UPDATED : error ? UpdateStatus.FAILED : UpdateStatus.UNCHANGED;
             }
 
             context.changes = changes;
