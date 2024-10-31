@@ -1,20 +1,14 @@
 import { GraphQLClient } from 'graphql-request';
-
 import { GitHubConfig } from './config.js';
 import { GraphQLQuery } from './graphql-query.js';
 import { GitHubIssue } from './issue.js';
 import { CustomLogger } from '../custom-logger.js';
 
-const logger = new CustomLogger(__filename);
+const logger = new CustomLogger(import.meta.url);
 
-export class GitHubClient {
+class GitHubClient {
     /** Client for interacting with a GitHub repository. */
-    private githubConfig: GitHubConfig;
-    private query: GraphQLQuery;
-    private client: GraphQLClient;
-    public epicIssues: GitHubIssue[];
-
-    constructor(githubConfig: GitHubConfig) {
+    constructor(githubConfig) {
         /** Initializes the GitHub client with the given configuration. */
         this.githubConfig = githubConfig;
         this.query = new GraphQLQuery(githubConfig);
@@ -22,17 +16,17 @@ export class GitHubClient {
         this.epicIssues = [];
     }
 
-    get config(): GitHubConfig {
+    get config() {
         /** GitHub configuration. */
         return this.githubConfig;
     }
 
-    async fetchProjectId(): Promise<void> {
+    async fetchProjectId() {
         /**
          * Fetch the project ID for the given project name.
          * If the project name is found, it will be set to configuration, otherwise an exception is raised.
          */
-        const response: any = await this.client.request(this.query.project(), {
+        const response = await this.client.request(this.query.project(), {
             headers: this.query.headers(),
         });
 
@@ -40,8 +34,8 @@ export class GitHubClient {
             throw new Error(`Error fetching project ID: ${JSON.stringify(response.errors)}`);
         }
 
-        const projects: any = response.data.repository.projectsV2.nodes;
-        const project = projects.find((p: any) => p.title === this.githubConfig.projectName);
+        const projects = response.data.repository.projectsV2.nodes;
+        const project = projects.find(p => p.title === this.githubConfig.projectName);
 
         if (project) {
             this.githubConfig.projectId = project.id;
@@ -51,9 +45,9 @@ export class GitHubClient {
         throw new Error(`Failed to fetch project ID for project: ${this.githubConfig.projectName}`);
     }
 
-    async fetchProjectItems(): Promise<void> {
+    async fetchProjectItems() {
         /** Fetch items from the GitHub project and their field values. */
-        let afterCursor: string | null = null;
+        let afterCursor = null;
         let hasNextPage = true;
         let totalItems = 0;
         const pageSize = 50;
@@ -61,7 +55,7 @@ export class GitHubClient {
         logger.verbose(`Fetching issues for project: ${this.githubConfig.projectName} (${this.githubConfig.projectId})`);
 
         while (hasNextPage) {
-            const response: any = await this.client.request(this.query.issues(afterCursor, pageSize), {
+            const response = await this.client.request(this.query.issues(afterCursor, pageSize), {
                 headers: this.query.headers(),
             });
 
@@ -69,7 +63,7 @@ export class GitHubClient {
                 throw new Error(`Error fetching items: ${JSON.stringify(response.errors)}`);
             }
 
-            const responseItems: any = response.data.node.items;
+            const responseItems = response.data.node.items;
             totalItems += this._handleIssuesData(responseItems.nodes);
 
             hasNextPage = responseItems.pageInfo.hasNextPage;
@@ -82,7 +76,7 @@ export class GitHubClient {
         });
     }
 
-    async fetchIssue(issueNumber: number): Promise<GitHubIssue> {
+    async fetchIssue(issueNumber) {
         /** Fetch the issue details from GitHub and return the issue object. */
         const issue = this.getIssue(issueNumber);
         if (issue) {
@@ -90,7 +84,7 @@ export class GitHubClient {
         }
 
         const query = this.query.issue(issueNumber);
-        const response: any = await this.client.request(query, {
+        const response = await this.client.request(query, {
             headers: this.query.headers(),
         });
 
@@ -107,12 +101,12 @@ export class GitHubClient {
         return newIssue;
     }
 
-    getIssue(issueNumber: number): GitHubIssue | undefined {
+    getIssue(issueNumber) {
         /** Get the issue details from loaded epic issue list. */
         return this.epicIssues.find(issue => issue.issueNumber === issueNumber);
     }
 
-    private _handleIssuesData(items: any[]): number {
+    _handleIssuesData(items) {
         /**
          * Extract and process issue data from the provided items.
          * Look for issues marked as epics and append them to the `epicIssues` list.
@@ -120,7 +114,7 @@ export class GitHubClient {
          * @returns The number of items processed.
          */
 
-        const epicIssues: GitHubIssue[] = [];
+        const epicIssues = [];
         items.forEach(item => {
             const content = item.content;
             if (!content) {
@@ -138,3 +132,5 @@ export class GitHubClient {
         return items.length;
     }
 }
+
+export { GitHubClient };

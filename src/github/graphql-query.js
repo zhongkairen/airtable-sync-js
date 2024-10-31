@@ -2,13 +2,11 @@ import { GitHubConfig } from './config.js';
 
 export class GraphQLQuery {
     /** Class that constructs GraphQL queries for fetching data from a GitHub repository. */
-    private githubConfig: GitHubConfig;
-
-    constructor(githubConfig: GitHubConfig) {
+    constructor(githubConfig) {
         this.githubConfig = githubConfig;
     }
 
-    issue(issueNumber: number): string {
+    issue(issueNumber) {
         /**
          * GraphQL query to fetch a single issue with projectV2 fields from a GitHub repository.
          */
@@ -85,7 +83,7 @@ export class GraphQLQuery {
         `;
     }
 
-    issues(afterCursor: string | null, pageSize: number = 20): string {
+    issues(afterCursor, pageSize = 20) {
         /**
          * GraphQL query to fetch issues with projectV2 fields from a GitHub project.
          * Pull requests and draft issues are not included in the query, but will be included in the query response.
@@ -178,7 +176,7 @@ export class GraphQLQuery {
         `;
     }
 
-    project(): string {
+    project() {
         /** GraphQL query to fetch all projects from a GitHub repository. */
         return `
         query {
@@ -194,7 +192,7 @@ export class GraphQLQuery {
         `;
     }
 
-    headers(): { [key: string]: string } {
+    headers() {
         /** Headers for the GraphQL query request. */
         return { "Authorization": `Bearer ${this.githubConfig.token}` };
     }

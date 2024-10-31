@@ -1,25 +1,11 @@
 import { UserToken } from '../user-token.js';
 
-interface ConfigJson {
-    baseId?: string;
-    // tableId?: string;
-    tableName?: string;
-    viewName?: string;
-}
-
 class AirtableConfig {
     /**
      * Class that handles the configuration for connecting to an Airtable base.
      */
 
-    token: string;
-    appId: string;
-    // tableId: string;
-    tableName: string;
-    viewName: string;
-
-
-    constructor(configJson: ConfigJson) {
+    constructor(configJson) {
         /**
          * Initialize the AirtableConfig object.
          * @param configJson - Configuration values for Airtable.
@@ -39,7 +25,7 @@ class AirtableConfig {
         };
 
         // Load a token from environment variable or configuration, either directly or from a file.
-        this.token = new UserToken(nameDict, configJson as { [key: string]: string }).read();
+        this.token = new UserToken(nameDict, configJson).read();
 
         // Load other configuration values from the configJson
         this.appId = configJson.baseId || '';
@@ -49,4 +35,4 @@ class AirtableConfig {
     }
 }
 
-export { AirtableConfig, ConfigJson };
+export { AirtableConfig };

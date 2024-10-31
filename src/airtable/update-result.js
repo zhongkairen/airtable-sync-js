@@ -1,45 +1,35 @@
-enum UpdateStatus {
-    UPDATED = "updated",
-    UNCHANGED = "unchanged",
-    FAILED = "failed"
-}
-
-interface Change {
-    old: any;
-    new: any;
-}
-
-interface RecordContext {
-    id: string;
-    issueNumber?: number;
-    changes?: { [field: string]: Change };
-    error?: string; // Optional error message for failed records
-}
+const UpdateStatus = {
+    UPDATED: "updated",
+    UNCHANGED: "unchanged",
+    FAILED: "failed"
+};
 
 class UpdateResult {
-    private result: { [key in UpdateStatus]: RecordContext[] } = {
-        [UpdateStatus.UPDATED]: [],
-        [UpdateStatus.UNCHANGED]: [],
-        [UpdateStatus.FAILED]: []
-    };
+    constructor() {
+        this.result = {
+            [UpdateStatus.UPDATED]: [],
+            [UpdateStatus.UNCHANGED]: [],
+            [UpdateStatus.FAILED]: []
+        };
+    }
 
-    toString(): string {
+    toString() {
         return this.summary;
     }
 
-    get updated(): RecordContext[] {
+    get updated() {
         return this.result[UpdateStatus.UPDATED];
     }
 
-    get unchanged(): RecordContext[] {
+    get unchanged() {
         return this.result[UpdateStatus.UNCHANGED];
     }
 
-    get failed(): RecordContext[] {
+    get failed() {
         return this.result[UpdateStatus.FAILED];
     }
 
-    get error(): string | undefined {
+    get error() {
         if (this.failed.length > 0) {
             const failedRecords = this.failed
                 .map(record => `  ${record.error}`)
@@ -49,8 +39,8 @@ class UpdateResult {
         return undefined; // Explicit return for clarity
     }
 
-    get summary(): string {
-        const result: string[] = [];
+    get summary() {
+        const result = [];
         if (this.updated.length > 0) {
             result.push(`updated: ${this.updated.length}`);
         }
@@ -63,7 +53,7 @@ class UpdateResult {
         return result.join(", ");
     }
 
-    get updates(): string {
+    get updates() {
         return this.updated
             .map(update => {
                 const changes = update.changes || {};
@@ -77,9 +67,9 @@ class UpdateResult {
             .join("\n");
     }
 
-    addRecordStatus(context: RecordContext, status: UpdateStatus): void {
+    addRecordStatus(context, status) {
         this.result[status].push(context);
     }
 }
 
-export { UpdateResult, UpdateStatus, RecordContext };
+module.exports = { UpdateResult, UpdateStatus };

@@ -5,49 +5,33 @@ import { CustomLogger } from '../custom-logger.js'; // Adjust the path as necess
 
 const logger = new CustomLogger('GitHubIssue');
 
-enum FieldType {
-    Text = "TEXT",
-    Number = "NUMBER",
-    Date = "DATE",
-    SingleSelect = "SINGLE_SELECT",
-    Iteration = "ITERATION"
-}
-
-interface FieldValue {
-    field: {
-        name: string;
-    };
-    text?: string;
-    duration?: string;
-    startDate?: string;
-    title?: string;
-    number?: number;
-    date?: string;
-    name?: string;
-}
+const FieldType = {
+    Text: "TEXT",
+    Number: "NUMBER",
+    Date: "DATE",
+    SingleSelect: "SINGLE_SELECT",
+    Iteration: "ITERATION"
+};
 
 class GitHubIssue {
-    url: string;
-    title?: string;
-    body?: string;
-    fields: Record<string, any>;
-
-    constructor(url: string) {
+    constructor(url) {
         this.url = url;
+        this.title = undefined;
+        this.body = undefined;
         this.fields = {};
     }
 
-    loadFields(baseData: any, fields: any): void {
-        const fieldValues = fields.fieldValues.nodes as FieldValue[];
+    loadFields(baseData, fields) {
+        const fieldValues = fields.fieldValues.nodes;
         this.url = baseData.url || this.url;
         this.title = baseData.title;
         this.body = baseData.body;
         this.handleFieldValues(fieldValues);
     }
 
-    toString(): string {
+    toString() {
         const body = this.body ? this.body.trim().split('\n')[0].slice(0, 50) : '';
-        const lines: string[] = [];
+        const lines = [];
 
         for (const attr in this) {
             if (['url', 'title', 'body'].includes(attr)) {
@@ -64,18 +48,18 @@ class GitHubIssue {
         return lines.map(line => `${indent}${line}`).join('\n');
     }
 
-    get isEpic(): boolean {
+    get isEpic() {
         const issueType = this.fields['issue_type'] || '';
         const cleanedIssueType = issueType.replace(/[^a-zA-Z0-9 ]/g, '').trim();
         return cleanedIssueType === 'Epic';
     }
 
-    private handleFieldValues(fieldValues: FieldValue[]): void {
+    handleFieldValues(fieldValues) {
         for (const fieldValue of fieldValues) {
             const field = fieldValue.field || {};
             const fieldName = field.name;
-            let fieldType: FieldType = FieldType.Text;
-            let value: any;
+            let fieldType = FieldType.Text;
+            let value;
 
             if (!fieldName) {
                 continue;
@@ -105,7 +89,7 @@ class GitHubIssue {
         }
     }
 
-    private static parseDate(dateStr: string): Date | null {
+    static parseDate(dateStr) {
         try {
             return parseISO(dateStr);
         } catch {
@@ -113,27 +97,27 @@ class GitHubIssue {
         }
     }
 
-    public static mapFieldName(fieldName: string): string {
+    static mapFieldName(fieldName) {
         return fieldName.toLowerCase().replace(/ /g, '_').replace(/-/g, '_');
     }
 
-    private static mapFieldValue(fieldType: FieldType, value: any): any {
+    static mapFieldValue(fieldType, value) {
         if (fieldType === FieldType.Date) {
             return GitHubIssue.parseDate(value);
         }
         return value;
     }
 
-    private addField(fieldName: string, value: any, fieldType: FieldType): void {
+    addField(fieldName, value, fieldType) {
         const name = GitHubIssue.mapFieldName(fieldName);
         if (['title', 'url'].includes(name)) {
-            (this as any)[name] = value;
+            this[name] = value;
         } else {
             this.fields[name] = GitHubIssue.mapFieldValue(fieldType, value);
         }
     }
 
-    get issueNumber(): number | null {
+    get issueNumber() {
         const match = this.url.match(/\/issues\/(\d+)/);
         return match ? parseInt(match[1], 10) : null;
     }

@@ -10,13 +10,7 @@ import { AirtableSync } from './airtable-sync.js';
 
 const logger = new CustomLogger(import.meta.url);
 
-// Define the configuration interfaces (optional but recommended for TypeScript)
-interface ConfigJson {
-    airtable: object;
-    github: object;
-}
-
-function parseArguments(): string {
+function parseArguments() {
     const argv = yargs(hideBin(process.argv))
         .usage('Usage: $0 [options]')
         .option('d', { alias: 'debug', type: 'boolean', describe: 'Set logging level to DEBUG' })
@@ -30,13 +24,13 @@ function parseArguments(): string {
         .help()
         .parseSync();
 
-    const logLevel = (['debug', 'verbose', 'info', 'warning'] as const)
+    const logLevel = ['debug', 'verbose', 'info', 'warning']
         .find(flag => argv[flag]) || 'error';
 
     return logLevel;
 }
 
-function findFirstExistingFile(directories: string[], filename: string): string | null {
+function findFirstExistingFile(directories, filename) {
     for (const dir of directories) {
         const fullPath = path.join(dir, filename);
         if (fs.existsSync(fullPath)) {
@@ -46,7 +40,7 @@ function findFirstExistingFile(directories: string[], filename: string): string 
     return null;
 }
 
-function getConfigFilePath(): string {
+function getConfigFilePath() {
     const CONFIG_FILE_NAME = 'config.json';
     const currentDir = process.cwd();
     const scriptDir = path.dirname(fileURLToPath(import.meta.url));
@@ -58,19 +52,19 @@ function getConfigFilePath(): string {
     return configPath;
 }
 
-async function main(): Promise<void> {
+async function main() {
     const logLevel = parseArguments();
     CustomLogger.setupLogging(logLevel);
 
     try {
         const configPath = getConfigFilePath();
-        const configJson: ConfigJson = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+        const configJson = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
         const airtableConfig = new AirtableConfig(configJson.airtable);
         const githubConfig = new GitHubConfig(configJson.github);
 
         const airtableSync = new AirtableSync(airtableConfig, githubConfig);
         await airtableSync.sync();
-    } catch (error: any) {
+    } catch (error) {
         logger.error(`Error reading configuration file: ${error.message}`);
     }
 }

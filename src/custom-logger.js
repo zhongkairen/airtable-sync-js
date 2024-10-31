@@ -3,15 +3,14 @@ import winston from 'winston';
 import * as path from 'path';
 
 export class CustomLogger {
-    private static readonly VERBOSE: number = 15; // Custom verbose level
-    private logger: winston.Logger;
+    static VERBOSE = 15; // Custom verbose level
 
-    constructor(name: string) {
+    constructor(name) {
         this.logger = winston.createLogger({
             level: 'info', // Default level
             format: winston.format.combine(
                 winston.format.timestamp(),
-                winston.format.printf((info: winston.Logform.TransformableInfo) => {
+                winston.format.printf((info) => {
                     return `${info.timestamp} ${info.level}: ${info.message}`;
                 })
             ),
@@ -24,27 +23,27 @@ export class CustomLogger {
         winston.addColors({ verbose: 'cyan' });
     }
 
-    public verbose(message: string, ...args: any[]): void {
+    verbose(message, ...args) {
         this._logWithCallerInfo(CustomLogger.VERBOSE, message, ...args);
     }
 
-    public info(message: string, ...args: any[]): void {
+    info(message, ...args) {
         this._logWithCallerInfo('info', message, ...args);
     }
 
-    public debug(message: string, ...args: any[]): void {
+    debug(message, ...args) {
         this._logWithCallerInfo('debug', message, ...args);
     }
 
-    public warning(message: string, ...args: any[]): void {
+    warning(message, ...args) {
         this._logWithCallerInfo('warn', message, ...args);
     }
 
-    public error(message: string, ...args: any[]): void {
+    error(message, ...args) {
         this._logWithCallerInfo('error', message, ...args);
     }
 
-    private _logWithCallerInfo(level: any, message: string, ...args: any[]): void {
+    _logWithCallerInfo(level, message, ...args) {
         const stack = new Error().stack;
         if (!stack) return;
 
@@ -62,8 +61,8 @@ export class CustomLogger {
         }
     }
 
-    public static setupLogging(level: string): void {
-        const logLevels: { [key: string]: string } = {
+    static setupLogging(level) {
+        const logLevels = {
             debug: 'debug',
             verbose: 'verbose',
             info: 'info',
@@ -76,10 +75,8 @@ export class CustomLogger {
             level: mappedLevel,
             format: winston.format.combine(
                 winston.format.timestamp(),
-                winston.format.printf((info: winston.Logform.TransformableInfo) => {
+                winston.format.printf((info) => {
                     return `${info.timestamp} ${info.level}: ${info.message}`;
-                    // winston.format.printf(({ timestamp, level, message }: { timestamp: string; level: string; message: string }) => {
-                    // return `${timestamp} ${level}: ${message}`;
                 })
             ),
             transports: [

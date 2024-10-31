@@ -1,13 +1,6 @@
 import * as fs from 'fs';
 import * as os from 'os';
 
-interface Names {
-    token?: string;
-    tokenPath?: string;
-    configToken?: string;
-    configTokenPath?: string;
-}
-
 class UserToken {
     /**
      * Token class to read a token from the environment or a file
@@ -15,10 +8,7 @@ class UserToken {
      * Otherwise, the token is read directly from the environment variable
      */
 
-    token?: string;
-    tokenPath?: string;
-
-    constructor(names: Names, fallback: { [key: string]: string }) {
+    constructor(names, fallback) {
         /**
          * Initialize the UserToken object.
          * @param names - The names of the environment variable and configuration keys for the token.
@@ -46,7 +36,7 @@ class UserToken {
         }
     }
 
-    read(): string {
+    read() {
         /**
          * Read the token from the environment or a file and return the token text.
          */
