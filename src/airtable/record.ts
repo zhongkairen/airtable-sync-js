@@ -1,6 +1,5 @@
 import { URL } from 'url';
-import { CustomLogger } from '../custom-logger';
-import { RecordDict } from 'pyairtable/api/types'; // todo: find equivalent library
+import { CustomLogger } from '../custom-logger.js';
 
 const logger = new CustomLogger(__filename);
 
@@ -17,12 +16,12 @@ class AirtableRecord {
     private static _requiredFields: string[] = ["Title", "Issue Link", "Issue Number"];
 
     /** Record dictionary to store the record data. */
-    private _recordDict: RecordDict;
+    private _recordDict: any;
 
     /** Dictionary to store the updated fields. */
     private _updatedFields: UpdatedFields;
 
-    constructor(recordDict: RecordDict) {
+    constructor(recordDict: any) {
         this._recordDict = recordDict;
         this._updatedFields = {};
     }
@@ -176,7 +175,7 @@ class AirtableRecord {
         this._updatedFields[field] = formattedValue;
     }
 
-    private static _format(value: any): any {
+    private _format(value: any): any {
         /**
          * Format the input value based on its type.
          * @param value - The input value to be formatted.

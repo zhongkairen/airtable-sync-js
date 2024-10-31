@@ -18,7 +18,7 @@ class UserToken {
     token?: string;
     tokenPath?: string;
 
-    constructor(names: Names, fallback: Record<string, string>) {
+    constructor(names: Names, fallback: { [key: string]: string }) {
         /**
          * Initialize the UserToken object.
          * @param names - The names of the environment variable and configuration keys for the token.

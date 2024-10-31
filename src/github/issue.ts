@@ -1,6 +1,7 @@
 import { parse, isDate } from 'date-fns'; // Use a date library for parsing
+import { parseISO } from 'date-fns';
 import { URL } from 'url';
-import { CustomLogger } from '../custom-logger'; // Adjust the path as necessary
+import { CustomLogger } from '../custom-logger.js'; // Adjust the path as necessary
 
 const logger = new CustomLogger('GitHubIssue');
 
@@ -73,7 +74,7 @@ class GitHubIssue {
         for (const fieldValue of fieldValues) {
             const field = fieldValue.field || {};
             const fieldName = field.name;
-            let fieldType: FieldType | null = null;
+            let fieldType: FieldType = FieldType.Text;
             let value: any;
 
             if (!fieldName) {
@@ -106,13 +107,13 @@ class GitHubIssue {
 
     private static parseDate(dateStr: string): Date | null {
         try {
-            return parse(dateStr, 'yyyy-MM-dd', new Date());
+            return parseISO(dateStr);
         } catch {
             return null;
         }
     }
 
-    private static mapFieldName(fieldName: string): string {
+    public static mapFieldName(fieldName: string): string {
         return fieldName.toLowerCase().replace(/ /g, '_').replace(/-/g, '_');
     }
 
@@ -126,7 +127,7 @@ class GitHubIssue {
     private addField(fieldName: string, value: any, fieldType: FieldType): void {
         const name = GitHubIssue.mapFieldName(fieldName);
         if (['title', 'url'].includes(name)) {
-            this[name] = value;
+            (this as any)[name] = value;
         } else {
             this.fields[name] = GitHubIssue.mapFieldValue(fieldType, value);
         }

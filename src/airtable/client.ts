@@ -1,28 +1,39 @@
-import { Api } from 'pyairtable'; // todo: find equivalent library
-import { AirtableConfig } from './config';
-import { UpdateResult, UpdateStatus } from './update-result';
-import { CustomLogger } from '../custom-logger';
-import { AirtableRecord } from './record';
+// import { AirtablePlusPlus } from 'airtable-plusplus';
+
+import { Airtablet } from './airtablet.js';
+import { AirtableConfig } from './config.js';
+import { UpdateResult, RecordContext, UpdateStatus } from './update-result.js';
+import { CustomLogger } from '../custom-logger.js';
+import { AirtableRecord } from './record.js';
 
 const logger = new CustomLogger(__filename);
 
 export class AirtableClient {
     private config: AirtableConfig;
-    private api: Api;
+    private airtable: Airtablet;
     private table: any; // Replace with actual type if available
     private _records: AirtableRecord[] = [];
-    private _currentRepo: string | null = null;
+    private _currentRepo: string = '';
     private _tableSchema: any = null; // Replace with actual type if available
 
     constructor(config: AirtableConfig) {
         this.config = config;
-        this.api = new Api(this.config.token);
-        this.table = this.api.table(this.config.appId, this.config.tableId);
+        // this.airtable = new Airtable({ apiKey: this.config.token });
+        this.airtable = new Airtablet({
+            baseId: this.config.appId,
+            apiKey: this.config.token
+        });
+        // this.table = this.airtable.base(this.config.appId).table(this.config.tableId);
+        // this.table = this.base(this.config.tableName);
+
+        // this.airtable.read(this.config.tableName).then(records => {
+        //     console.log(records);
+        // });
     }
 
     public get tableSchema(): any { // Replace with actual type if available
         if (!this._tableSchema) {
-            this._tableSchema = this.table.schema();
+            this._tableSchema = this.airtable.getTableSchema(this.config.tableName);
         }
         return this._tableSchema;
     }
@@ -43,14 +54,19 @@ export class AirtableClient {
     }
 
     public readRecords(): void {
-        logger.verbose(`Reading Airtable records from base: ${this.config.appId} table: ${this.config.tableId} view: '${this.config.viewName}'`);
-        this._records = this.table.all({ view: this.config.viewName }).map((entry: any) => new AirtableRecord(entry));
+        logger.verbose(`Reading Airtable records from base: ${this.config.appId} table: ${this.config.tableName} view: '${this.config.viewName}'`);
+        // this._records = this.table.all({ view: this.config.viewName }).map((entry: any) => new AirtableRecord(entry));
+
+        this.airtable.list(this.config.tableName).then((records: AirtableRecord[]) => {
+            console.log(records);
+            this._records = records.map((entry: any) => new AirtableRecord(entry));
+        });
 
         const recordsLog = this.records.map(record => `    ${record.issueNumber} ${record.title}`).join('\n');
         logger.debug(`all records: \n${recordsLog}`);
     }
 
-    public get currentRepo(): string | null {
+    public get currentRepo(): string {
         return this._currentRepo;
     }
 
@@ -74,11 +90,10 @@ export class AirtableClient {
         const updatedRecordList = this.table.batchUpdate(updateDictList);
         const syncResult = new UpdateResult();
 
-        updatedRecordList.forEach(updatedRecord => {
+        updatedRecordList.forEach((updatedRecord: any) => {
             const recordId = updatedRecord.id;
             const record = this.getRecordById(recordId);
-            const issueNumber = record ? record.issueNumber : null;
-            const context: { [key: string]: any } = { id: recordId, issue_number: issueNumber };
+            const issueNumber = record?.issueNumber;
             let changes: any = null;
             let error: any = null;
             let status: UpdateStatus;
@@ -91,8 +106,12 @@ export class AirtableClient {
                 status = changes ? UpdateStatus.UPDATED : error ? UpdateStatus.FAILED : UpdateStatus.UNCHANGED;
             }
 
-            context.changes = changes;
-            context.error = error;
+            const context: RecordContext = {
+                id: recordId,
+                issueNumber: issueNumber,
+                changes: changes,
+                error: error
+            };
             syncResult.addRecordStatus(context, status);
         });
 

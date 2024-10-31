@@ -1,8 +1,9 @@
-import { GraphqlClient } from 'graphql-request'; // todo: find equivalent library
-import { GitHubConfig } from './config';
-import { GraphQLQuery } from './graphql-query';
-import { GitHubIssue } from './issue';
-import { CustomLogger } from '../custom-logger';
+import { GraphQLClient } from 'graphql-request';
+
+import { GitHubConfig } from './config.js';
+import { GraphQLQuery } from './graphql-query.js';
+import { GitHubIssue } from './issue.js';
+import { CustomLogger } from '../custom-logger.js';
 
 const logger = new CustomLogger(__filename);
 
@@ -10,14 +11,14 @@ export class GitHubClient {
     /** Client for interacting with a GitHub repository. */
     private githubConfig: GitHubConfig;
     private query: GraphQLQuery;
-    private client: GraphqlClient;
+    private client: GraphQLClient;
     public epicIssues: GitHubIssue[];
 
     constructor(githubConfig: GitHubConfig) {
         /** Initializes the GitHub client with the given configuration. */
         this.githubConfig = githubConfig;
         this.query = new GraphQLQuery(githubConfig);
-        this.client = new GraphqlClient('https://api.github.com/graphql');
+        this.client = new GraphQLClient('https://api.github.com/graphql');
         this.epicIssues = [];
     }
 
@@ -26,12 +27,12 @@ export class GitHubClient {
         return this.githubConfig;
     }
 
-    fetchProjectId(): void {
+    async fetchProjectId(): Promise<void> {
         /**
          * Fetch the project ID for the given project name.
          * If the project name is found, it will be set to configuration, otherwise an exception is raised.
          */
-        const response = this.client.request(this.query.project(), {
+        const response: any = await this.client.request(this.query.project(), {
             headers: this.query.headers(),
         });
 
@@ -39,7 +40,7 @@ export class GitHubClient {
             throw new Error(`Error fetching project ID: ${JSON.stringify(response.errors)}`);
         }
 
-        const projects = response.data.repository.projectsV2.nodes;
+        const projects: any = response.data.repository.projectsV2.nodes;
         const project = projects.find((p: any) => p.title === this.githubConfig.projectName);
 
         if (project) {
@@ -60,7 +61,7 @@ export class GitHubClient {
         logger.verbose(`Fetching issues for project: ${this.githubConfig.projectName} (${this.githubConfig.projectId})`);
 
         while (hasNextPage) {
-            const response = await this.client.request(this.query.issues(afterCursor, pageSize), {
+            const response: any = await this.client.request(this.query.issues(afterCursor, pageSize), {
                 headers: this.query.headers(),
             });
 
@@ -68,7 +69,7 @@ export class GitHubClient {
                 throw new Error(`Error fetching items: ${JSON.stringify(response.errors)}`);
             }
 
-            const responseItems = response.data.node.items;
+            const responseItems: any = response.data.node.items;
             totalItems += this._handleIssuesData(responseItems.nodes);
 
             hasNextPage = responseItems.pageInfo.hasNextPage;
@@ -89,7 +90,7 @@ export class GitHubClient {
         }
 
         const query = this.query.issue(issueNumber);
-        const response = await this.client.request(query, {
+        const response: any = await this.client.request(query, {
             headers: this.query.headers(),
         });
 

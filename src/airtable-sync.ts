@@ -1,15 +1,15 @@
-import { GitHubConfig } from './github/config';
-import { GitHubClient } from './github/client';
-import { GitHubIssue } from './github/issue';
-import { AirtableConfig } from './airtable/config';
-import { AirtableClient } from './airtable/client';
-import { AirtableRecord } from './airtable/record';
-import { UpdateResult } from './airtable/update-result';
-import { CustomLogger } from './custom-logger';
+import { GitHubConfig } from './github/config.js';
+import { GitHubClient } from './github/client.js';
+import { GitHubIssue } from './github/issue.js';
+import { AirtableConfig } from './airtable/config.js';
+import { AirtableClient } from './airtable/client.js';
+import { AirtableRecord } from './airtable/record.js';
+import { UpdateResult } from './airtable/update-result.js';
+import { CustomLogger } from './custom-logger.js';
 
 const logger = new CustomLogger(__filename);
 
-class AirtableSync {
+export class AirtableSync {
     private static _fieldMap: { [key: string]: string };
     private airtableConfig: AirtableConfig;
     private airtable: AirtableClient;
@@ -19,12 +19,12 @@ class AirtableSync {
         this.airtableConfig = airtableConfig;
         this.airtable = new AirtableClient(airtableConfig);
         this.github = new GitHubClient(githubConfig);
-        AirtableSync._fieldMap = Object.entries(githubConfig.field_map).reduce((acc, [k, v]) => {
+        AirtableSync._fieldMap = Object.entries(githubConfig.fieldMap).reduce((acc, [k, v]) => {
             acc[GitHubIssue.mapFieldName(k)] = v;
             return acc;
         }, {} as { [key: string]: string });
         // Ensure only the records in the relevant repository are synced
-        this.airtable.currentRepo = githubConfig.repo_name;
+        this.airtable.currentRepo = githubConfig.repoName || '';
     }
 
     public readRecords(): void {
@@ -70,7 +70,7 @@ class AirtableSync {
         return valid;
     }
 
-    public sync(): void {
+    public async sync(): Promise<void> {
         // Reconcile the records in Airtable with the issues in GitHub
         this._prepSync();
 
@@ -79,7 +79,7 @@ class AirtableSync {
         logger.verbose(`Syncing ${this.airtable.recordsInCurrentRepo.length} record(s) from current_repo: ${this.airtable.currentRepo}, of total ${this.airtable.records.length} record(s).`);
 
         for (const record of this.airtable.recordsInCurrentRepo) {
-            const issue = this._getIssue(record);
+            const issue = await this._getIssue(record);
             const updateDict = this._updateFields(record, issue);
             if (updateDict) {
                 updateDictList.push(updateDict);
@@ -106,9 +106,9 @@ class AirtableSync {
         this.readIssues();
     }
 
-    private _getIssue(record: AirtableRecord): GitHubIssue {
+    private async _getIssue(record: AirtableRecord): Promise<GitHubIssue> {
         // Retrieve the GitHub issue or create one from an Airtable record
-        return this.github.fetchIssue(record.issueNumber);
+        return await this.github.fetchIssue(record.issueNumber);
     }
 
     private _logSyncResult(syncResult: UpdateResult, logger: CustomLogger): void {

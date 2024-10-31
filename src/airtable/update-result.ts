@@ -11,7 +11,7 @@ interface Change {
 
 interface RecordContext {
     id: string;
-    issue_number: string;
+    issueNumber?: number;
     changes?: { [field: string]: Change };
     error?: string; // Optional error message for failed records
 }
@@ -72,7 +72,7 @@ class UpdateResult {
                         `    ${field}: ${change.old} -> ${change.new}`
                     )
                     .join("\n");
-                return `  Record - id:${update.id} issue_number:${update.issue_number} \n${changeList}`;
+                return `  Record - id:${update.id} issueNumber:${update.issueNumber} \n${changeList}`;
             })
             .join("\n");
     }
@@ -82,4 +82,4 @@ class UpdateResult {
     }
 }
 
-export { UpdateResult, UpdateStatus };
+export { UpdateResult, UpdateStatus, RecordContext };

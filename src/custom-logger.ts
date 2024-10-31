@@ -1,4 +1,5 @@
-import * as winston from 'winston';
+// import * as winston from 'winston';
+import winston from 'winston';
 import * as path from 'path';
 
 export class CustomLogger {
@@ -10,8 +11,8 @@ export class CustomLogger {
             level: 'info', // Default level
             format: winston.format.combine(
                 winston.format.timestamp(),
-                winston.format.printf(({ timestamp, level, message }) => {
-                    return `${timestamp} ${level}: ${message}`;
+                winston.format.printf((info: winston.Logform.TransformableInfo) => {
+                    return `${info.timestamp} ${info.level}: ${info.message}`;
                 })
             ),
             transports: [
@@ -75,8 +76,10 @@ export class CustomLogger {
             level: mappedLevel,
             format: winston.format.combine(
                 winston.format.timestamp(),
-                winston.format.printf(({ timestamp, level, message }) => {
-                    return `${timestamp} ${level}: ${message}`;
+                winston.format.printf((info: winston.Logform.TransformableInfo) => {
+                    return `${info.timestamp} ${info.level}: ${info.message}`;
+                    // winston.format.printf(({ timestamp, level, message }: { timestamp: string; level: string; message: string }) => {
+                    // return `${timestamp} ${level}: ${message}`;
                 })
             ),
             transports: [

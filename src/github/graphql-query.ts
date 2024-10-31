@@ -1,4 +1,4 @@
-import { GitHubConfig } from './config';
+import { GitHubConfig } from './config.js';
 
 export class GraphQLQuery {
     /** Class that constructs GraphQL queries for fetching data from a GitHub repository. */
@@ -85,7 +85,7 @@ export class GraphQLQuery {
         `;
     }
 
-    issues(afterCursor: string, pageSize: number = 20): string {
+    issues(afterCursor: string | null, pageSize: number = 20): string {
         /**
          * GraphQL query to fetch issues with projectV2 fields from a GitHub project.
          * Pull requests and draft issues are not included in the query, but will be included in the query response.

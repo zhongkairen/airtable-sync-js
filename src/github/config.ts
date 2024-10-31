@@ -1,4 +1,4 @@
-import { UserToken } from '../user-token';
+import { UserToken } from '../user-token.js';
 
 interface ConfigJson {
     project?: string;
@@ -33,7 +33,7 @@ export class GitHubConfig {
         };
 
         // Load a token from environment variable or configuration, either directly or from a file.
-        this.token = new UserToken(nameDict, configJson).read();
+        this.token = new UserToken(nameDict, configJson as { [key: string]: string }).read();
 
         // Load other configuration values from the configJson
         this.projectName = configJson.project;

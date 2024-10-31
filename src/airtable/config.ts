@@ -1,8 +1,9 @@
-import { UserToken } from '../user-token';
+import { UserToken } from '../user-token.js';
 
 interface ConfigJson {
     baseId?: string;
-    tableId?: string;
+    // tableId?: string;
+    tableName?: string;
     viewName?: string;
 }
 
@@ -13,8 +14,10 @@ class AirtableConfig {
 
     token: string;
     appId: string;
-    tableId: string;
+    // tableId: string;
+    tableName: string;
     viewName: string;
+
 
     constructor(configJson: ConfigJson) {
         /**
@@ -36,13 +39,14 @@ class AirtableConfig {
         };
 
         // Load a token from environment variable or configuration, either directly or from a file.
-        this.token = new UserToken(nameDict, configJson).read();
+        this.token = new UserToken(nameDict, configJson as { [key: string]: string }).read();
 
         // Load other configuration values from the configJson
         this.appId = configJson.baseId || '';
-        this.tableId = configJson.tableId || '';
+        // this.tableId = configJson.tableId || '';
+        this.tableName = configJson.tableName || '';
         this.viewName = configJson.viewName || '';
     }
 }
 
-export { AirtableConfig };
+export { AirtableConfig, ConfigJson };
