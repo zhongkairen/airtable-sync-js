@@ -72,4 +72,4 @@ class UpdateResult {
     }
 }
 
-module.exports = { UpdateResult, UpdateStatus };
+export { UpdateResult, UpdateStatus };

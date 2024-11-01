@@ -1,11 +1,9 @@
-// const { AirtablePlusPlus } = require('airtable-plusplus');
+import { Airtablet } from './airtablet.js';
+import { UpdateResult, UpdateStatus } from './update-result.js';
+import { CustomLogger } from '../custom-logger.js';
+import { AirtableRecord } from './record.js';
 
-const { Airtablet } = require('./airtablet.js');
-const { AirtableConfig } = require('./config.js');
-const { UpdateResult, RecordContext, UpdateStatus } = require('./update-result.js');
-const { CustomLogger } = require('../custom-logger.js');
-const { AirtableRecord } = require('./record.js');
-
+const __filename = new URL(import.meta.url).pathname;
 const logger = new CustomLogger(__filename);
 
 class AirtableClient {
@@ -108,4 +106,4 @@ class AirtableClient {
     }
 }
 
-module.exports = { AirtableClient };
+export { AirtableClient };

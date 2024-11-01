@@ -1,12 +1,11 @@
-import { GitHubConfig } from './github/config.js';
 import { GitHubClient } from './github/client.js';
 import { GitHubIssue } from './github/issue.js';
-import { AirtableConfig } from './airtable/config.js';
 import { AirtableClient } from './airtable/client.js';
 import { AirtableRecord } from './airtable/record.js';
 import { UpdateResult } from './airtable/update-result.js';
 import { CustomLogger } from './custom-logger.js';
 
+const __filename = new URL(import.meta.url).pathname;
 const logger = new CustomLogger(__filename);
 
 export class AirtableSync {

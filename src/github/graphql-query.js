@@ -1,4 +1,4 @@
-import { GitHubConfig } from './config.js';
+// import { GitHubConfig } from './config.js';
 
 export class GraphQLQuery {
     /** Class that constructs GraphQL queries for fetching data from a GitHub repository. */

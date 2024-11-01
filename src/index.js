@@ -4,8 +4,7 @@ import { fileURLToPath } from 'url';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 import { CustomLogger } from './custom-logger.js';
-import { GitHubConfig } from './github/config.js';
-import { AirtableConfig } from './airtable/config.js';
+import { AirtableConfig, GitHubConfig } from './config.js';
 import { AirtableSync } from './airtable-sync.js';
 
 const logger = new CustomLogger(import.meta.url);
@@ -63,7 +62,8 @@ async function main() {
         const githubConfig = new GitHubConfig(configJson.github);
 
         const airtableSync = new AirtableSync(airtableConfig, githubConfig);
-        await airtableSync.sync();
+        logger.info('Reading records from Airtable...');
+        // await airtableSync.sync();
     } catch (error) {
         logger.error(`Error reading configuration file: ${error.message}`);
     }

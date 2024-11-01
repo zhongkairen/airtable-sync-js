@@ -1,7 +1,7 @@
 // test/client.test.js
 import { expect } from 'chai';
 import { GitHubClient } from '../src/github/client.js'; // Adjust this path if needed
-import { GitHubConfig } from '../src/github/config.js'; // If needed
+import { GitHubConfig } from '../src/config.js'; // If needed
 
 describe('GitHubClient', () => {
     let githubConfig;

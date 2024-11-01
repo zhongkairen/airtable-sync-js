@@ -1,10 +1,10 @@
 {
-  "name": "airtable-sync",
+  "name": "airtable-sync-js",
   "version": "1.0.0",
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "node --experimental-specifier-resolution=node index.js",
+    "start": "NODE_NO_WARNINGS=1 node --experimental-specifier-resolution=node src/index.js",
     "test": "mocha 'test/**/*.test.js'"
   },
   "author": "Zhongkai Ren",
@@ -19,8 +19,7 @@
     "mocha": "^10.8.2"
   },
   "dependencies": {
-    "airtable": "^0.12.2",
-    "airtable-plusplus": "^0.3.4",
+    "airtable-plus": "^1.0.4",
     "date-fns": "^4.1.0",
     "fs": "^0.0.1-security",
     "graphql-request": "^7.1.0",

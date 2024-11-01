@@ -36,17 +36,25 @@ class UserToken {
         }
     }
 
+    /** @property { string } value - The token text. */
+    get value() {
+        return this.token;
+    }
+
     read() {
         /**
          * Read the token from the environment or a file and return the token text.
          */
-        if (this.token) {
-            return this.token;
+        if (!this.token && !this.tokenPath)
+            throw new Error('No valid token available.');
+
+        if (!this.token) {
+            const tokenPath = this.tokenPath.replace(/^~(?=$|\/|\\)/, os.homedir());
+            this.token = fs.readFileSync(tokenPath, 'utf8').trim(); // Trim to remove leading/trailing whitespace
         }
-        if (this.tokenPath) {
-            return fs.readFileSync(os.homedir() + this.tokenPath, 'utf8').trim(); // Trim to remove leading/trailing whitespace
-        }
-        throw new Error('No valid token available.');
+
+
+        return this;
     }
 }
 

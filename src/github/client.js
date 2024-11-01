@@ -1,5 +1,5 @@
 import { GraphQLClient } from 'graphql-request';
-import { GitHubConfig } from './config.js';
+// import { GitHubConfig } from './config.js';
 import { GraphQLQuery } from './graphql-query.js';
 import { GitHubIssue } from './issue.js';
 import { CustomLogger } from '../custom-logger.js';

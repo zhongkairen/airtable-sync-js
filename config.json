@@ -1,0 +1,20 @@
+{
+  "airtable": {
+    "baseId": "app5c1A4u4zw1UbXN",
+    "tableId": "tblma0DImG8wj84Va",
+    "tokenPath": "~/.ssh/airtable.records_wr.schema_base_r.sync_sandbox.pat"
+  },
+  "github": {
+    "repoOwner": "zhongkairen",
+    "repoName": "airtable-sync",
+    "projectName": "Airtable Sync",
+    "fieldMap": {
+      "Start": "Start Date",
+      "End": "Delivery Date",
+      "Alias": "Alias",
+      "Start Count": "Start count",
+      "Priority": "Priority"
+    },
+    "tokenPath": "~/.ssh/gh.repo.project.pat"
+  }
+}
