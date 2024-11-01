@@ -1,21 +1,21 @@
 import fs from 'fs';
 import path from 'path';
-import { fileURLToPath } from 'url';
 import yargs from 'yargs';
-import { hideBin } from 'yargs/helpers';
-import { CustomLogger } from './custom-logger.js';
-import { AirtableConfig, GitHubConfig } from './config.js';
-import { AirtableSync } from './airtable-sync.js';
+import {fileURLToPath} from 'url';
+import {hideBin} from 'yargs/helpers';
+import {CustomLogger} from './custom-logger.js';
+import {AirtableConfig, GitHubConfig} from './config.js';
+import {AirtableSync} from './airtable-sync.js';
 
-const logger = new CustomLogger(import.meta.url);
+let logger;
 
 function parseArguments() {
     const argv = yargs(hideBin(process.argv))
         .usage('Usage: $0 [options]')
-        .option('d', { alias: 'debug', type: 'boolean', describe: 'Set logging level to DEBUG' })
-        .option('v', { alias: 'verbose', type: 'boolean', describe: 'Set logging level to VERBOSE' })
-        .option('i', { alias: 'info', type: 'boolean', describe: 'Set logging level to INFO' })
-        .option('w', { alias: 'warning', type: 'boolean', describe: 'Set logging level to WARNING' })
+        .option('d', {alias: 'debug', type: 'boolean', describe: 'Set logging level to DEBUG'})
+        .option('v', {alias: 'verbose', type: 'boolean', describe: 'Set logging level to VERBOSE'})
+        .option('i', {alias: 'info', type: 'boolean', describe: 'Set logging level to INFO'})
+        .option('w', {alias: 'warning', type: 'boolean', describe: 'Set logging level to WARNING'})
         .conflicts('d', ['v', 'i', 'w'])
         .conflicts('v', ['d', 'i', 'w'])
         .conflicts('i', ['d', 'v', 'w'])
@@ -23,8 +23,7 @@ function parseArguments() {
         .help()
         .parseSync();
 
-    const logLevel = ['debug', 'verbose', 'info', 'warning']
-        .find(flag => argv[flag]) || 'error';
+    const logLevel = ['debug', 'verbose', 'info', 'warning'].find((flag) => argv[flag]) || 'error';
 
     return logLevel;
 }
@@ -53,20 +52,22 @@ function getConfigFilePath() {
 
 async function main() {
     const logLevel = parseArguments();
-    CustomLogger.setupLogging(logLevel);
-
+    CustomLogger.setLogLevel(logLevel);
+    logger = new CustomLogger(import.meta.url); // Create a new logger instance
+    logger.info(`log level set to '${logLevel}'`);
+    logger.debug('Reading records from Airtable...');
     try {
         const configPath = getConfigFilePath();
         const configJson = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
         const airtableConfig = new AirtableConfig(configJson.airtable);
         const githubConfig = new GitHubConfig(configJson.github);
-
-        const airtableSync = new AirtableSync(airtableConfig, githubConfig);
-        logger.info('Reading records from Airtable...');
-        // await airtableSync.sync();
     } catch (error) {
         logger.error(`Error reading configuration file: ${error.message}`);
     }
+
+    const airtableSync = new AirtableSync(airtableConfig, githubConfig);
+    logger.info('Reading records from Airtable...');
+    await airtableSync.sync();
 }
 
-main().catch(err => logger.error(`Unexpected error: ${err.message}`));
+main().catch((err) => console.error(`Unexpected error: ${err.message}`));

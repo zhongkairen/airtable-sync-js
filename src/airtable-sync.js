@@ -69,6 +69,8 @@ export class AirtableSync {
     async sync() {
         // Reconcile the records in Airtable with the issues in GitHub
         this._prepSync();
+        return;
+
 
         const updateDictList = [];
 

@@ -1,87 +1,56 @@
-// import * as winston from 'winston';
+// custom-logger.js
 import winston from 'winston';
-import * as path from 'path';
+import path from 'path';
 
-export class CustomLogger {
-    static VERBOSE = 15; // Custom verbose level
+class CustomLogger {
+    static globalLogLevel = 'info'; // Default log level
 
-    constructor(name) {
+    static setLogLevel(logLevel) {
+        CustomLogger.globalLogLevel = logLevel;
+    }
+
+    constructor(filePath) {
+        const filename = path.basename(filePath);
         this.logger = winston.createLogger({
-            level: 'info', // Default level
+            level: CustomLogger.globalLogLevel,
             format: winston.format.combine(
                 winston.format.timestamp(),
-                winston.format.printf((info) => {
-                    return `${info.timestamp} ${info.level}: ${info.message}`;
+                winston.format.printf(info => {
+                    const callerInfo = this.getCallerInfo();
+                    return `${info.timestamp} ${info.level}: [${filename}:${callerInfo.lineno}] ${info.message}`;
                 })
             ),
             transports: [
                 new winston.transports.Console()
             ]
         });
-
-        // Add the custom level if not already defined
-        winston.addColors({ verbose: 'cyan' });
-    }
-
-    verbose(message, ...args) {
-        this._logWithCallerInfo(CustomLogger.VERBOSE, message, ...args);
     }
 
     info(message, ...args) {
-        this._logWithCallerInfo('info', message, ...args);
+        this.logger.info(message, ...args);
     }
 
     debug(message, ...args) {
-        this._logWithCallerInfo('debug', message, ...args);
-    }
-
-    warning(message, ...args) {
-        this._logWithCallerInfo('warn', message, ...args);
+        this.logger.debug(message, ...args);
     }
 
     error(message, ...args) {
-        this._logWithCallerInfo('error', message, ...args);
+        this.logger.error(message, ...args);
     }
 
-    _logWithCallerInfo(level, message, ...args) {
+    getCallerInfo() {
         const stack = new Error().stack;
-        if (!stack) return;
+        const lines = stack.split('\n');
+        const callerLine = lines[3] || lines[2];
 
-        const callerLine = stack.split('\n')[3]; // Get the third line (caller)
-        const match = callerLine.match(/at (.+) \((.+):(\d+):(\d+)\)/); // Extract function name, file name, and line number
-
+        const match = callerLine.match(/at (.+) \((.+):(\d+):\d+\)|at (.+) (.+):(\d+):\d+/);
         if (match) {
-            const methodName = match[1].trim();
-            const filename = path.basename(match[2]);
-            const lineno = match[3];
-
-            // Log the message with the correct filename and line number
-            const logMessage = `${filename}:${lineno} - ${methodName}() - ${message}`;
-            this.logger.log(level, logMessage, ...args);
+            const lineno = match[3] || match[6];
+            return { lineno };
         }
-    }
 
-    static setupLogging(level) {
-        const logLevels = {
-            debug: 'debug',
-            verbose: 'verbose',
-            info: 'info',
-            warning: 'warn',
-            error: 'error'
-        };
-        const mappedLevel = logLevels[level] || 'error';
-
-        winston.configure({
-            level: mappedLevel,
-            format: winston.format.combine(
-                winston.format.timestamp(),
-                winston.format.printf((info) => {
-                    return `${info.timestamp} ${info.level}: ${info.message}`;
-                })
-            ),
-            transports: [
-                new winston.transports.Console()
-            ]
-        });
+        return { lineno: 'unknown' };
     }
 }
+
+export { CustomLogger };
