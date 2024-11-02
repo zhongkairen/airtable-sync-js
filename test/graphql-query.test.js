@@ -6,24 +6,22 @@ import { GraphQLClient } from 'graphql-request';
 import { GitHubGqlQuery } from '../src/github/graphql-query.js';
 
 describe('GitHubGqlQuery', () => {
-  let githubConfig;
-  let gqlQuery;
+  const githubConfig = {
+    token: 'test-token',
+    repoOwner: 'test-owner',
+    repoName: 'test-repo',
+    projectId: 'test-project-id',
+  };
+  let uut;
   let clientMock;
 
   beforeEach(() => {
-    githubConfig = {
-      token: 'test-token',
-      repoOwner: 'test-owner',
-      repoName: 'test-repo',
-      projectId: 'test-project-id',
-    };
-
     clientMock = {
       query: sinon.stub(),
     };
 
-    gqlQuery = new GitHubGqlQuery(githubConfig);
-    gqlQuery.client = clientMock;
+    uut = new GitHubGqlQuery(githubConfig);
+    uut.client = clientMock;
   });
 
   afterEach(() => {
@@ -36,7 +34,7 @@ describe('GitHubGqlQuery', () => {
       const expectedData = { data: { issue: { id: 'issue-id', number: issueNumber } } };
       clientMock.query.resolves(expectedData);
 
-      const result = await gqlQuery.issue(issueNumber);
+      const result = await uut.issue(issueNumber);
 
       expect(clientMock.query.calledOnce).to.be.true;
       expect(clientMock.query.firstCall.args[1]).to.deep.equal({
@@ -53,11 +51,48 @@ describe('GitHubGqlQuery', () => {
       clientMock.query.rejects(new Error('Query failed'));
 
       try {
-        await gqlQuery.issue(issueNumber);
+        await uut.issue(issueNumber);
         throw new Error('Test failed');
       } catch (err) {
         expect(err.message).to.equal('Query failed');
       }
+    });
+
+    it('should fetch issues data from GitHub', async () => {
+      const afterCursor = 'test-cursor';
+      const pageSize = 50;
+      const expectedData = {
+        data: {
+          issues: { nodes: [{ id: 'issue-id' }], pageInfo: { afterCursor, hasNextPage: true } },
+        },
+      };
+      clientMock.query.resolves(expectedData);
+
+      const result = await uut.issues(afterCursor, pageSize);
+
+      expect(clientMock.query.calledOnce).to.be.true;
+      expect(clientMock.query.firstCall.args[1]).to.deep.equal({
+        projectId: githubConfig.projectId,
+        afterCursor,
+        pageSize,
+      });
+
+      expect(result).to.deep.equal(expectedData);
+    });
+
+    it('should fetch project data from GitHub', async () => {
+      const expectedData = { data: { project: { id: 'project-id' } } };
+      clientMock.query.resolves(expectedData);
+
+      const result = await uut.project();
+
+      expect(clientMock.query.calledOnce).to.be.true;
+      expect(clientMock.query.firstCall.args[1]).to.deep.equal({
+        owner: githubConfig.repoOwner,
+        name: githubConfig.repoName,
+      });
+
+      expect(result).to.deep.equal(expectedData);
     });
   });
 });
