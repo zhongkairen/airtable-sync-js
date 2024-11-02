@@ -6,7 +6,8 @@
   "scripts": {
     "start": "NODE_NO_WARNINGS=1 node --experimental-specifier-resolution=node src/index.js",
     "dev": "NODE_NO_WARNINGS=1 node --experimental-specifier-resolution=node src/index.js -d",
-    "test": "mocha --reporter dot 'test/**/*.test.js'",
+    "test": "mocha --reporter dot 'test/**/*.test.js' --ignore 'test/**/*.integration.test.js'",
+    "test:integration": "mocha --reporter dot 'test/**/*.integration.test.js'",
     "reinstall": "npm uninstall $(npm ls --depth=0 --parseable | tail -n +2 | sed 's|.*/||') && npm install"
   },
   "author": "Zhongkai Ren",

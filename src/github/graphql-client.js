@@ -1,21 +1,19 @@
 import { GraphQLClient } from 'graphql-request'; // Use GraphQLClient from graphql-request
 import gql from 'graphql-tag';
 import { fileURLToPath } from 'url';
-import path from 'path';
-import { readFileSync } from 'fs';
+import { readFileSync as defaultReadFileSync } from 'fs';
+import { getPath, PathName } from '../path-util.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const graphqlDir = path.join(__dirname, 'graphql');
 const uri = 'https://api.github.com/graphql';
 
 class GitHubGqlClient {
-  constructor(token) {
+  constructor(token, readFileSync = defaultReadFileSync) {
     this._client = new GraphQLClient(uri, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     });
+    this._readFileSync = readFileSync;
     this._queryCache = {};
   }
 
@@ -24,7 +22,10 @@ class GitHubGqlClient {
   }
 
   _loadQuery(queryName) {
-    const queryString = readFileSync(path.join(graphqlDir, `${queryName}.graphql`), 'utf8');
+    const queryString = this._readFileSync(
+      getPath(PathName.GRAPHQL, `${queryName}.graphql`),
+      'utf8'
+    );
     return gql`
       ${queryString}
     `;

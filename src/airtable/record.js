@@ -1,12 +1,7 @@
 import { URL } from 'url';
 import { CustomLogger } from '../custom-logger.js';
-
-const __filename = new URL(import.meta.url).pathname;
-const logger = new CustomLogger(__filename);
-
-// interface UpdatedFields {
-//     [key: string]: any;
-// }
+import { __filename__ } from '../path-util.js';
+const logger = new CustomLogger(__filename__(import.meta.url));
 
 // Convert the class to JavaScript by removing TypeScript-specific syntax
 class AirtableRecord {
