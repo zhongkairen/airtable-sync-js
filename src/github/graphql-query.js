@@ -1,32 +1,14 @@
-import { gql } from '@apollo/client';
-import { readFileSync } from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import ApolloClientWrapper from './graphql/apollo-client';
+import GitHubGqlClient from './graphql-client.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const url = 'https://api.github.com/graphql';
-
-export class GraphQLQuery {
+export class GitHubGqlQuery {
   /** Class that constructs GraphQL queries for fetching data from a GitHub repository. */
   constructor(githubConfig) {
     this.githubConfig = githubConfig;
-    this.client = new ApolloClientWrapper(githubConfig.token, url).client;
-  }
-
-  _getQuery(queryName) {
-    return gql(readFileSync(path.join(__dirname, `graphql/${queryName}.graphql`), 'utf8'));
-  }
-
-  async _query(queryName, variables) {
-    const query = this._getQuery(queryName);
-    const { data } = await this.client.query({ query, variables });
-    return data;
+    this.client = new GitHubGqlClient(githubConfig.token).client;
   }
 
   async issue(issueNumber) {
-    return this._query('getIssue', {
+    return this.client.query('getIssue', {
       owner: this.githubConfig.repoOwner,
       name: this.githubConfig.repoName,
       issueNumber,
@@ -34,7 +16,7 @@ export class GraphQLQuery {
   }
 
   async issues(afterCursor, pageSize = 20) {
-    return this._query('getIssues', {
+    return this.client.query('getIssues', {
       projectId: this.githubConfig.projectId,
       afterCursor,
       pageSize,
@@ -42,7 +24,7 @@ export class GraphQLQuery {
   }
 
   async project() {
-    return this._query('getProject', {
+    return this.client.query('getProject', {
       owner: this.githubConfig.repoOwner,
       name: this.githubConfig.repoName,
     });
