@@ -1,0 +1,30 @@
+{
+  "type": "object",
+  "properties": {
+    "repository": {
+      "type": "object",
+      "properties": {
+        "projectsV2": {
+          "type": "object",
+          "properties": {
+            "nodes": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": { "type": "string" },
+                  "title": { "type": "string" }
+                },
+                "required": ["id", "title"]
+              },
+              "minItems": 1
+            }
+          },
+          "required": ["nodes"]
+        }
+      },
+      "required": ["projectsV2"]
+    }
+  },
+  "required": ["repository"]
+}

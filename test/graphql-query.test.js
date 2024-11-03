@@ -37,9 +37,10 @@ describe('GitHubGqlQuery', () => {
       const result = await uut.issue(issueNumber);
 
       expect(clientMock.query.calledOnce).to.be.true;
+      const { repoOwner, repoName } = githubConfig;
       expect(clientMock.query.firstCall.args[1]).to.deep.equal({
-        owner: githubConfig.repoOwner,
-        name: githubConfig.repoName,
+        repoOwner,
+        repoName,
         issueNumber,
       });
 

@@ -1,0 +1,206 @@
+{
+  "node": {
+    "items": {
+      "nodes": [
+        {
+          "id": "PVTI_lAHOBlUv_s4AqLjVzgT36wQ",
+          "fieldValues": {
+            "nodes": [
+              {},
+              {},
+              {
+                "text": "Use separate workflows for scheduled run and change triggered run",
+                "field": {
+                  "name": "Title"
+                }
+              },
+              {
+                "name": "Epic",
+                "field": {
+                  "name": "Issue Type"
+                }
+              },
+              {
+                "name": "Done",
+                "field": {
+                  "name": "Status"
+                }
+              },
+              {
+                "date": "2024-10-14",
+                "field": {
+                  "name": "Start"
+                }
+              },
+              {
+                "date": "2024-10-16",
+                "field": {
+                  "name": "End"
+                }
+              },
+              {
+                "text": "BRS-007",
+                "field": {
+                  "name": "Alias"
+                }
+              },
+              {
+                "name": "P0",
+                "field": {
+                  "name": "Priority"
+                }
+              },
+              {
+                "number": 3,
+                "field": {
+                  "name": "Start Count"
+                }
+              },
+              {
+                "duration": 14,
+                "startDate": "2024-10-16",
+                "title": "Iteration 1",
+                "field": {
+                  "name": "Iteration"
+                }
+              },
+              {
+                "name": "M",
+                "field": {
+                  "name": "T Size"
+                }
+              },
+              {
+                "name": "v0.2.0",
+                "field": {
+                  "name": "Release"
+                }
+              }
+            ]
+          },
+          "content": {
+            "closed": true,
+            "closedAt": "2024-10-15T08:39:23Z",
+            "title": "Use separate workflows for scheduled run and change triggered run",
+            "url": "https://github.com/zhongkairen/airtable-sync/issues/7",
+            "number": 7,
+            "state": "CLOSED",
+            "body": "Scheduled run should always use the latest package.\nChange triggered runs should verify the functionality in the branch and therefore run using the latest source in the branch.\n\n\n- [x] #15",
+            "assignees": {
+              "nodes": []
+            },
+            "labels": {
+              "nodes": [
+                {
+                  "name": "airtable",
+                  "color": "aaaaaa"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "PVTI_lAHOBlUv_s4AqLjVzgT37qs",
+          "fieldValues": {
+            "nodes": [
+              {},
+              {},
+              {
+                "text": "Improve test coverage",
+                "field": {
+                  "name": "Title"
+                }
+              },
+              {
+                "name": "Done",
+                "field": {
+                  "name": "Status"
+                }
+              },
+              {
+                "name": "Epic",
+                "field": {
+                  "name": "Issue Type"
+                }
+              },
+              {
+                "date": "2024-10-10",
+                "field": {
+                  "name": "Start"
+                }
+              },
+              {
+                "date": "2024-10-31",
+                "field": {
+                  "name": "End"
+                }
+              },
+              {
+                "text": "COV-010",
+                "field": {
+                  "name": "Alias"
+                }
+              },
+              {
+                "number": 2,
+                "field": {
+                  "name": "Start Count"
+                }
+              },
+              {
+                "duration": 14,
+                "startDate": "2024-10-16",
+                "title": "Iteration 1",
+                "field": {
+                  "name": "Iteration"
+                }
+              },
+              {
+                "name": "P1",
+                "field": {
+                  "name": "Priority"
+                }
+              },
+              {
+                "name": "L",
+                "field": {
+                  "name": "T Size"
+                }
+              },
+              {
+                "name": "v0.2.0",
+                "field": {
+                  "name": "Release"
+                }
+              }
+            ]
+          },
+          "content": {
+            "closed": true,
+            "closedAt": "2024-10-18T19:56:52Z",
+            "title": "Improve test coverage",
+            "url": "https://github.com/zhongkairen/airtable-sync/issues/9",
+            "number": 9,
+            "state": "CLOSED",
+            "body": "Support\n - [x] Add unit test workflow\n - [x] post test result \n - [x] Command palette for running test\n - [x] Coverage config\n - [x] Update coverage doc\n - [x] Add test coverage workflow\n - [x] Run test coverage badge update only for main branch\n - [x] Command palette in tasks.json\n\nCoverage\n - [x] airtable client\n - [x] airtable update_result\n - [x] github client\n - [x] github issue\n\nCode changes\n - [x] Fix table_fields_schema and field_in_schema in AirtableClient\n - [x] Refactor issue read",
+            "assignees": {
+              "nodes": []
+            },
+            "labels": {
+              "nodes": [
+                {
+                  "name": "airtable",
+                  "color": "aaaaaa"
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "pageInfo": {
+        "hasNextPage": true,
+        "endCursor": "Mg"
+      }
+    }
+  }
+}

@@ -1,8 +1,12 @@
-import { expect } from 'chai';
+import * as chai from 'chai';
+import chaiAsPromised from 'chai-as-promised';
 import sinon from 'sinon';
 import { GitHubClient } from '../src/github/client.js';
 import { GitHubGqlQuery } from '../src/github/graphql-query.js';
 import { CustomLogger } from '../src/custom-logger.js';
+
+chai.use(chaiAsPromised);
+const { expect } = chai;
 
 describe('GitHubClient', () => {
   const githubConfig = {
@@ -12,59 +16,77 @@ describe('GitHubClient', () => {
     projectId: 'test-project-id',
     projectName: 'test-project-name',
   };
-  let client;
+  let uut;
   let queryMock;
   let loggerMock;
 
   beforeEach(() => {
     queryMock = sinon.createStubInstance(GitHubGqlQuery);
     loggerMock = sinon.createStubInstance(CustomLogger);
-    client = new GitHubClient(githubConfig);
-    client.query = queryMock;
-    client.logger = loggerMock;
+    uut = new GitHubClient(githubConfig);
+    uut.query = queryMock;
+    uut.logger = loggerMock;
   });
 
   afterEach(() => {
     sinon.restore();
   });
 
+  describe('fetchProjectId', () => {
+    it('d1 - should fetch the project ID and set it in the configuration', async () => {
+      const projectResponse = {
+        repository: {
+          projects: {
+            nodes: [{ id: 'project-id' }],
+          },
+        },
+      };
+
+      queryMock.project.resolves(projectResponse);
+      queryMock.handleProjectResponse.returns(projectResponse.repository.projects.nodes[0]);
+
+      await uut.fetchProjectId();
+
+      expect(queryMock.project.calledOnce).to.be.true;
+      expect(uut.config.projectId).to.equal('project-id');
+    });
+  });
+
   describe('fetchProjectItems', () => {
-    it('should fetch all project items and log the results', async () => {
+    it('p1 - should fetch all project items and log the results', async () => {
       const issuesResponse = {
-        data: {
-          node: {
-            items: {
-              nodes: [
-                {
-                  content: { url: 'url1', number: 1 },
-                  fieldValues: { nodes: [{ name: 'Epic', field: { name: 'Issue Type' } }] },
-                },
-                {
-                  content: { url: 'url2', number: 2 },
-                  fieldValues: { nodes: [{ name: 'Task', field: { name: 'Issue Type' } }] },
-                },
-              ],
-              pageInfo: { hasNextPage: false, endCursor: 'cursor' },
-            },
+        node: {
+          items: {
+            nodes: [
+              {
+                content: { url: 'url1', number: 1 },
+                fieldValues: { nodes: [{ name: 'Epic', field: { name: 'Issue Type' } }] },
+              },
+              {
+                content: { url: 'url2', number: 2 },
+                fieldValues: { nodes: [{ name: 'Task', field: { name: 'Issue Type' } }] },
+              },
+            ],
+            pageInfo: { hasNextPage: false, endCursor: 'cursor' },
           },
         },
       };
 
       queryMock.issues.resolves(issuesResponse);
       queryMock.handleIssuesResponse.returns({
-        nodes: issuesResponse.data.node.items.nodes,
-        pageInfo: issuesResponse.data.node.items.pageInfo,
+        nodes: issuesResponse.node.items.nodes,
+        pageInfo: issuesResponse.node.items.pageInfo,
       });
 
-      await client.fetchProjectItems();
+      await uut.fetchProjectItems();
 
       expect(queryMock.issues.calledOnce).to.be.true;
       expect(queryMock.issues.firstCall.args).to.deep.equal([null, 50]);
-      expect(client.epicIssues).to.have.lengthOf(1);
-      expect(client.epicIssues[0].url).to.equal('url1');
+      expect(uut.epicIssues).to.have.lengthOf(1);
+      expect(uut.epicIssues[0].url).to.equal('url1');
     });
 
-    it('should fetch multiple pages of project items', async () => {
+    it('p2 - should fetch multiple pages of project items', async () => {
       const firstPageResponse = {
         data: {
           node: {
@@ -108,13 +130,69 @@ describe('GitHubClient', () => {
         pageInfo: secondPageResponse.data.node.items.pageInfo,
       });
 
-      await client.fetchProjectItems();
+      await uut.fetchProjectItems();
 
       expect(queryMock.issues.calledTwice).to.be.true;
       expect(queryMock.issues.firstCall.args).to.deep.equal([null, 50]);
       expect(queryMock.issues.secondCall.args).to.deep.equal(['cursor1', 50]);
-      expect(client.epicIssues).to.have.lengthOf(1);
-      expect(client.epicIssues[0].url).to.equal('url1');
+      expect(uut.epicIssues).to.have.lengthOf(1);
+      expect(uut.epicIssues[0].url).to.equal('url1');
+    });
+  });
+
+  describe('fetchIssue', () => {
+    it('i1 - should return the issue from the epic issues list', async () => {
+      const issue = { issueNumber: 1 };
+      uut.epicIssues = [issue];
+
+      const result = await uut.fetchIssue(1);
+
+      expect(result).to.equal(issue);
+      expect(queryMock.issue.called).to.be.false;
+    });
+
+    it('i2 - should fetch the issue from GitHub if not in the list', async () => {
+      const url = `https://github.com/${githubConfig.repoOwner}/${githubConfig.repoName}/issues/1`;
+      const issueResponse = {
+        repository: {
+          issue: {
+            url,
+            projectItems: {
+              nodes: [
+                {
+                  fieldValues: { nodes: [{ name: 'Epic', field: { name: 'Issue Type' } }] },
+                },
+              ],
+            },
+          },
+        },
+      };
+
+      queryMock.issue.resolves(issueResponse);
+      const res = {
+        item: issueResponse.repository.issue,
+        fields: issueResponse.repository.issue.projectItems.nodes[0],
+      };
+      queryMock.handleIssueResponse.returns(res);
+
+      const result = await uut.fetchIssue(1);
+
+      expect(result.url).to.equal(url);
+    });
+  });
+
+  describe('getIssue', () => {
+    it('s1 - should return the issue from the epic issues list', () => {
+      const issue = { issueNumber: 1 };
+      uut.epicIssues = [issue];
+
+      expect(uut.getIssue(1)).to.equal(issue);
+    });
+
+    it('s2 - should return undefined if the issue is not in the list', () => {
+      uut.epicIssues = [{ issueNumber: 1 }];
+
+      expect(uut.getIssue(2)).to.be.undefined;
     });
   });
 });

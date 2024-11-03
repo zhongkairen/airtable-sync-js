@@ -36,14 +36,14 @@ describe('AirtableConfig', () => {
       delete process.env.AIRTABLE_TOKEN_PATH;
     });
 
-    it('should initialize with token from environment variable', () => {
+    it('c0 - should initialize with token from environment variable', () => {
       process.env.AIRTABLE_TOKEN = 'test-token-value';
       const configJson = {};
       const airtableConfig = new AirtableConfig(configJson);
       expect(airtableConfig.token).to.equal('test-token-value');
     });
 
-    it('should initialize token with token path from environment variable', () => {
+    it('c1 - should initialize token with token path from environment variable', () => {
       const { tokenPath } = testVars;
       process.env.AIRTABLE_TOKEN_PATH = tokenPath;
       const configJson = {};
@@ -51,20 +51,20 @@ describe('AirtableConfig', () => {
       expect(airtableConfig.token).to.equal(testVars.expectedToken);
     });
 
-    it('should initialize with token from configJson', () => {
+    it('c2 - should initialize with token from configJson', () => {
       const configJson = { token: 'config-token-value' };
       const airtableConfig = new AirtableConfig(configJson);
       expect(airtableConfig.token).to.equal('config-token-value');
     });
 
-    it('should initialize token with token path from configJson', () => {
+    it('c3 - should initialize token with token path from configJson', () => {
       const { tokenPath } = testVars;
       const configJson = { tokenPath: tokenPath };
       const airtableConfig = new AirtableConfig(configJson);
       expect(airtableConfig.token).to.equal(testVars.expectedToken);
     });
 
-    it('should initialize with other configuration values from configJson', () => {
+    it('c4 - should initialize with other configuration values from configJson', () => {
       process.env.AIRTABLE_TOKEN_PATH = testVars.tokenPath;
       const configJson = {
         baseId: 'test-base-id',
@@ -77,7 +77,7 @@ describe('AirtableConfig', () => {
       expect(airtableConfig.viewName).to.equal('test-view-name');
     });
 
-    it('should throw an error if neither token nor token path is set', () => {
+    it('c5 - should throw an error if neither token nor token path is set', () => {
       expect(() => new AirtableConfig({})).to.throw(Error);
     });
   });

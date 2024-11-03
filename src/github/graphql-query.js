@@ -8,9 +8,10 @@ export class GitHubGqlQuery {
   }
 
   async issue(issueNumber) {
+    const { repoOwner, repoName } = this.githubConfig;
     return this._ghGqlClient.query('getIssue', {
-      owner: this.githubConfig.repoOwner,
-      name: this.githubConfig.repoName,
+      repoOwner,
+      repoName,
       issueNumber,
     });
   }
@@ -62,6 +63,7 @@ export class GitHubGqlQuery {
      * @see {files} ./graphql/getProject.response.schema.json
      * @see {files} ./graphql/getProject.response.json
      */
+
     if (response.errors) {
       throw new Error(`Error fetching project ID: ${JSON.stringify(response.errors)}`);
     }
@@ -70,6 +72,7 @@ export class GitHubGqlQuery {
     const project = nodes.find((p) => p.title === this.githubConfig.projectName);
 
     if (!project) {
+      console.log('no project found');
       throw new Error(
         `Project not found: ${this.githubConfig.projectName}`,
         '\nresponse:\n',

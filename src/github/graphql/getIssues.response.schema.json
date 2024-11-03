@@ -1,0 +1,166 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "node": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "object",
+          "properties": {
+            "nodes": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "fieldValues": {
+                    "type": "object",
+                    "properties": {
+                      "nodes": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "oneOf": [
+                            {
+                              "type": "object",
+                              "properties": {
+                                "text": { "type": "string" },
+                                "field": {
+                                  "type": "object",
+                                  "properties": {
+                                    "name": { "type": "string" }
+                                  },
+                                  "required": ["name"]
+                                }
+                              },
+                              "required": ["text", "field"]
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "name": { "type": "string" },
+                                "field": {
+                                  "type": "object",
+                                  "properties": {
+                                    "name": { "type": "string" }
+                                  },
+                                  "required": ["name"]
+                                }
+                              },
+                              "required": ["name", "field"]
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "date": { "type": "string", "format": "date" },
+                                "field": {
+                                  "type": "object",
+                                  "properties": {
+                                    "name": { "type": "string" }
+                                  },
+                                  "required": ["name"]
+                                }
+                              },
+                              "required": ["date", "field"]
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "number": { "type": "integer" },
+                                "field": {
+                                  "type": "object",
+                                  "properties": {
+                                    "name": { "type": "string" }
+                                  },
+                                  "required": ["name"]
+                                }
+                              },
+                              "required": ["number", "field"]
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "duration": { "type": "integer" },
+                                "startDate": { "type": "string", "format": "date" },
+                                "title": { "type": "string" },
+                                "field": {
+                                  "type": "object",
+                                  "properties": {
+                                    "name": { "type": "string" }
+                                  },
+                                  "required": ["name"]
+                                }
+                              },
+                              "required": ["duration", "startDate", "title", "field"]
+                            }
+                          ]
+                        }
+                      }
+                    },
+                    "required": ["nodes"]
+                  },
+                  "content": {
+                    "type": "object",
+                    "properties": {
+                      "closed": { "type": "boolean" },
+                      "closedAt": { "type": "string", "format": "date-time" },
+                      "title": { "type": "string" },
+                      "url": { "type": "string", "format": "uri" },
+                      "number": { "type": "integer" },
+                      "state": { "type": "string" },
+                      "body": { "type": "string" },
+                      "assignees": {
+                        "type": "object",
+                        "properties": {
+                          "nodes": {
+                            "type": "array",
+                            "items": { "type": "object" } // Assuming a flexible structure for assignees
+                          }
+                        }
+                      },
+                      "labels": {
+                        "type": "object",
+                        "properties": {
+                          "nodes": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "name": { "type": "string" },
+                                "color": { "type": "string" }
+                              },
+                              "required": ["name", "color"]
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "required": [
+                      "closed",
+                      "closedAt",
+                      "title",
+                      "url",
+                      "number",
+                      "state",
+                      "body",
+                      "assignees",
+                      "labels"
+                    ]
+                  }
+                },
+                "required": ["id", "fieldValues", "content"]
+              }
+            },
+            "required": ["nodes"]
+          },
+          "required": ["nodes", "pageInfo"]
+        }
+      },
+      "required": ["items"]
+    }
+  },
+  "required": ["node"]
+}

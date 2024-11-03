@@ -58,6 +58,7 @@ query getIssues($pageSize: Int!, $afterCursor: String, $projectId: ID!) {
             ... on Issue {
               title
               url
+              number
               state
               body
               assignees(first: 10) {

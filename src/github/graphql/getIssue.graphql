@@ -1,6 +1,8 @@
-query getIssue($owner: String!, $repoName: String!, $issueNumber: Int!) {
-  repository(owner: $owner, name: $repoName) {
+query getIssue($repoOwner: String!, $repoName: String!, $issueNumber: Int!) {
+  repository(owner: $repoOwner, name: $repoName) {
     issue(number: $issueNumber) {
+      url
+      number
       title
       body
       assignees(first: 10) {

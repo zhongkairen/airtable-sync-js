@@ -1,0 +1,81 @@
+{
+  "repository": {
+    "issue": {
+      "url": "https://github.com/zhongkairen/airtable-sync/issues/7",
+      "number": 7,
+      "title": "Use separate workflows for scheduled run and change triggered run",
+      "body": "Scheduled run should always use the latest package.\nChange triggered runs should verify the functionality in the branch and therefore run using the latest source in the branch.\n\n\n- [x] #15",
+      "assignees": {
+        "nodes": []
+      },
+      "labels": {
+        "nodes": [
+          {
+            "name": "airtable",
+            "color": "aaaaaa"
+          }
+        ]
+      },
+      "projectItems": {
+        "nodes": [
+          {
+            "fieldValues": {
+              "nodes": [
+                {},
+                {},
+                {
+                  "text": "Use separate workflows for scheduled run and change triggered run",
+                  "field": {
+                    "name": "Title"
+                  }
+                },
+                {
+                  "name": "Epic",
+                  "field": {
+                    "name": "Issue Type"
+                  }
+                },
+                {
+                  "name": "Done",
+                  "field": {
+                    "name": "Status"
+                  }
+                },
+                {
+                  "date": "2024-10-14",
+                  "field": {
+                    "name": "Start"
+                  }
+                },
+                {
+                  "date": "2024-10-16",
+                  "field": {
+                    "name": "End"
+                  }
+                },
+                {
+                  "text": "BRS-007",
+                  "field": {
+                    "name": "Alias"
+                  }
+                },
+                {
+                  "name": "P0",
+                  "field": {
+                    "name": "Priority"
+                  }
+                },
+                {
+                  "number": 3,
+                  "field": {
+                    "name": "Start Count"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  }
+}

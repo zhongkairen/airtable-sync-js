@@ -18,6 +18,7 @@ describe('GitHubClient - Integration Test', () => {
   let uut;
   let queryMock;
   let loggerMock;
+  let epicIssues;
 
   beforeEach(() => {
     loggerMock = sinon.createStubInstance(CustomLogger);
@@ -63,6 +64,8 @@ describe('GitHubClient - Integration Test', () => {
       expect(url).to.have.string(githubConfig.repoOwner);
       expect(url).to.have.string(githubConfig.repoName);
       expect(url).to.match(/https:\/\/github\.com\/.*\/.*\/issues\/\d+/);
+      // For other test cases
+      epicIssues = uut.epicIssues;
     });
 
     it('b2 - should fetch multiple pages of project items', async function () {
@@ -81,4 +84,35 @@ describe('GitHubClient - Integration Test', () => {
       expect(issueNumbers).to.have.lengthOf(new Set(issueNumbers).size);
     });
   }); // method fetchProjectItems
+
+  describe('fetchIssue', function () {
+    this.slow(3000);
+    this.timeout(5000);
+    it('c1 - should fetch the issue details from GitHub and return the issue object', async () => {
+      // Given the issue number
+      const issueNumber = 7;
+
+      // When fetching the issue details
+      const issue = await uut.fetchIssue(issueNumber);
+
+      // Then the issue should be fetched
+      expect(issue).to.have.property('issueNumber', issueNumber);
+      expect(issue).to.have.property('title');
+      expect(issue).to.have.property('url');
+      expect(issue).to.have.property('fields');
+    });
+
+    it('c2 - should get the issue details from loaded epic issue list', async () => {
+      // Given epic issues are already loaded
+      uut.epicIssues = epicIssues;
+      const issueNumber = 7; // number doesn't matter, fake epic issue
+      const issueFromList = uut.getIssue(issueNumber);
+
+      // When fetching the issue details
+      const issue = await uut.fetchIssue(issueNumber);
+
+      // Then the issue should be fetched
+      expect(issue).to.deep.equal(issueFromList);
+    });
+  }); // method fetchIssue
 }); // GitHubClient

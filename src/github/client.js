@@ -24,8 +24,9 @@ class GitHubClient {
      * If the project name is found, it will be set to configuration, otherwise an exception is raised.
      */
     const response = await this.query.project();
+
     const project = this.query.handleProjectResponse(response);
-    this.githubConfig.projectId = project.id;
+    this.githubConfig.projectId = project?.id;
   }
 
   async fetchProjectItems(pageSize = 50, _testPageLimit = undefined) {
@@ -63,7 +64,7 @@ class GitHubClient {
     const response = await this.query.issue(issueNumber);
     const { item, fields } = this.query.handleIssueResponse(response);
 
-    const newIssue = new GitHubIssue(item.url);
+    const newIssue = new GitHubIssue(item?.url);
     newIssue.loadFields(item, fields);
     return newIssue;
   }
