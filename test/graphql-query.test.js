@@ -21,7 +21,7 @@ describe('GitHubGqlQuery', () => {
     };
 
     uut = new GitHubGqlQuery(githubConfig);
-    uut.client = clientMock;
+    uut._ghGqlClient = clientMock;
   });
 
   afterEach(() => {
@@ -29,7 +29,7 @@ describe('GitHubGqlQuery', () => {
   });
 
   describe('issue', () => {
-    it('should fetch issue data from GitHub', async () => {
+    it('a1 - should fetch issue data from GitHub', async () => {
       const issueNumber = 123;
       const expectedData = { data: { issue: { id: 'issue-id', number: issueNumber } } };
       clientMock.query.resolves(expectedData);
@@ -46,7 +46,7 @@ describe('GitHubGqlQuery', () => {
       expect(result).to.deep.equal(expectedData);
     });
 
-    it('should throw an error if the query fails', async () => {
+    it('a2 - should throw an error if the query fails', async () => {
       const issueNumber = 123;
       clientMock.query.rejects(new Error('Query failed'));
 
@@ -57,8 +57,10 @@ describe('GitHubGqlQuery', () => {
         expect(err.message).to.equal('Query failed');
       }
     });
+  });
 
-    it('should fetch issues data from GitHub', async () => {
+  describe('issues', () => {
+    it('b1 - should fetch issues data from GitHub', async () => {
       const afterCursor = 'test-cursor';
       const pageSize = 50;
       const expectedData = {
@@ -79,17 +81,22 @@ describe('GitHubGqlQuery', () => {
 
       expect(result).to.deep.equal(expectedData);
     });
+  });
 
-    it('should fetch project data from GitHub', async () => {
+  describe('project', () => {
+    it('p1 - should fetch project data from GitHub', async () => {
       const expectedData = { data: { project: { id: 'project-id' } } };
       clientMock.query.resolves(expectedData);
 
       const result = await uut.project();
 
       expect(clientMock.query.calledOnce).to.be.true;
-      expect(clientMock.query.firstCall.args[1]).to.deep.equal({
-        owner: githubConfig.repoOwner,
-        name: githubConfig.repoName,
+
+      const { repoOwner, repoName } = clientMock.query.firstCall.args[1];
+      const variables = { repoOwner, repoName };
+      expect(variables).to.deep.equal({
+        repoOwner: githubConfig.repoOwner,
+        repoName: githubConfig.repoName,
       });
 
       expect(result).to.deep.equal(expectedData);

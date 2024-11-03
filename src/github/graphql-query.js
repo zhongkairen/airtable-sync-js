@@ -4,11 +4,11 @@ export class GitHubGqlQuery {
   /** Class that constructs GraphQL queries for fetching data from a GitHub repository. */
   constructor(githubConfig) {
     this.githubConfig = githubConfig;
-    this.client = new GitHubGqlClient(githubConfig.token).client;
+    this._ghGqlClient = new GitHubGqlClient(githubConfig.token);
   }
 
   async issue(issueNumber) {
-    return this.client.query('getIssue', {
+    return this._ghGqlClient.query('getIssue', {
       owner: this.githubConfig.repoOwner,
       name: this.githubConfig.repoName,
       issueNumber,
@@ -21,7 +21,7 @@ export class GitHubGqlQuery {
       throw new Error(`Error fetching items: ${JSON.stringify(response.errors)}`);
     }
 
-    const item = response.data.repository.issue;
+    const item = response.repository.issue;
     const nodes = item?.projectItems?.nodes;
     const fields = nodes ? nodes[0] : {};
 
@@ -29,7 +29,7 @@ export class GitHubGqlQuery {
   }
 
   async issues(afterCursor, pageSize) {
-    return this.client.query('getIssues', {
+    return this._ghGqlClient.query('getIssues', {
       projectId: this.githubConfig.projectId,
       afterCursor,
       pageSize,
@@ -37,30 +37,44 @@ export class GitHubGqlQuery {
   }
 
   handleIssuesResponse(response) {
+    /**
+     * @param {Object} response - response json object
+     * Expected response structure:
+     * @see {files} ./graphql/getIssues.response.schema.json
+     * @see {files} ./graphql/getIssues.response.json
+     */
+    // console.log('handleIssuesResponse response:', JSON.stringify(response, null, 2));
     if (response.errors) {
       throw new Error(`Error fetching items: ${JSON.stringify(response.errors)}`);
     }
 
-    return response.data.node.items;
+    return response.node.items;
   }
 
   async project() {
-    return this.client.query('getProject', {
-      owner: this.githubConfig.repoOwner,
-      name: this.githubConfig.repoName,
-    });
+    return this._ghGqlClient.query('getProject', { ...this.githubConfig });
   }
 
   handleProjectResponse(response) {
+    /**
+     * @param {Object} response - response json object
+     * Expected response structure:
+     * @see {files} ./graphql/getProject.response.schema.json
+     * @see {files} ./graphql/getProject.response.json
+     */
     if (response.errors) {
       throw new Error(`Error fetching project ID: ${JSON.stringify(response.errors)}`);
     }
 
-    const projects = response.data.repository.projectsV2.nodes;
-    const project = projects.find((p) => p.title === this.githubConfig.projectName);
+    const nodes = response?.repository?.projectsV2?.nodes ?? [];
+    const project = nodes.find((p) => p.title === this.githubConfig.projectName);
 
     if (!project) {
-      throw new Error(`Project not found: ${this.githubConfig.projectName}`);
+      throw new Error(
+        `Project not found: ${this.githubConfig.projectName}`,
+        '\nresponse:\n',
+        JSON.stringify(response, null, 2)
+      );
     }
 
     return project;

@@ -28,12 +28,11 @@ class GitHubClient {
     this.githubConfig.projectId = project.id;
   }
 
-  async fetchProjectItems() {
+  async fetchProjectItems(pageSize = 50, _testPageLimit = undefined) {
     /** Fetch items from the GitHub project and their field values. */
     let endCursor = null;
     let hasNextPage = true;
     let totalItems = 0;
-    const pageSize = 50;
 
     logger.verbose(
       `Fetching issues for project: ${this.githubConfig.projectName} (${this.githubConfig.projectId})`
@@ -46,6 +45,8 @@ class GitHubClient {
       ({ hasNextPage, endCursor } = pageInfo);
 
       totalItems += this._handleIssuesData(nodes);
+
+      if (_testPageLimit !== undefined && totalItems >= _testPageLimit * pageSize) break;
     }
 
     logger.verbose(`Found ${this.epicIssues.length} epic issues out of ${totalItems} items`);

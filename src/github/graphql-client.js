@@ -8,17 +8,13 @@ const uri = 'https://api.github.com/graphql';
 
 class GitHubGqlClient {
   constructor(token, readFileSync = defaultReadFileSync) {
-    this._client = new GraphQLClient(uri, {
+    this._gqlClient = new GraphQLClient(uri, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     });
     this._readFileSync = readFileSync;
     this._queryCache = {};
-  }
-
-  get client() {
-    return this._client;
   }
 
   _loadQuery(queryName) {
@@ -38,7 +34,7 @@ class GitHubGqlClient {
 
   async query(queryName, variables) {
     const gqlQuery = this._getQuery(queryName);
-    const data = await this.client.request(gqlQuery, variables); // Send request using graphql-request
+    const data = await this._gqlClient.request(gqlQuery, variables); // Send request using graphql-request
     return data;
   }
 }
