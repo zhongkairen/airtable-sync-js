@@ -32,6 +32,10 @@ class CustomLogger {
     this.logger.debug(message, ...args);
   }
 
+  warn(message, ...args) {
+    this.logger.warn(message, ...args);
+  }
+
   verbose(message, ...args) {
     this.logger.verbose(message, ...args);
   }

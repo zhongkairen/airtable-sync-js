@@ -1,5 +1,5 @@
 import { parse, isDate } from 'date-fns'; // Use a date library for parsing
-import { parseISO } from 'date-fns';
+import { parseISO, isValid } from 'date-fns';
 import { URL } from 'url';
 import { CustomLogger } from '../custom-logger.js'; // Adjust the path as necessary
 
@@ -13,11 +13,17 @@ const FieldType = {
   Iteration: 'ITERATION',
 };
 
+/**
+ * Represents a GitHub issue.
+ */
 class GitHubIssue {
+  static FieldType = FieldType;
+
   constructor(url) {
     this.url = url;
     this.title = undefined;
     this.body = undefined;
+    this.number = undefined;
     this.fields = {};
   }
 
@@ -26,6 +32,7 @@ class GitHubIssue {
     this.url = baseData.url || this.url;
     this.title = baseData.title;
     this.body = baseData.body;
+    this.number = baseData.number;
     this.handleFieldValues(fieldValues);
   }
 
@@ -56,7 +63,8 @@ class GitHubIssue {
 
   handleFieldValues(fieldValues) {
     for (const fieldValue of fieldValues) {
-      const field = fieldValue.field || {};
+      // const field = fieldValue.field || {};
+      const { field = {} } = fieldValue;
       const fieldName = field.name;
       let fieldType = FieldType.Text;
       let value;
@@ -81,7 +89,7 @@ class GitHubIssue {
         fieldType = FieldType.SingleSelect;
         value = fieldValue.name;
       } else {
-        logger.warning(`unknown field type: ${fieldValue}`);
+        logger.warn(`unknown field type: ${fieldValue}`);
         value = null;
       }
 
@@ -90,11 +98,9 @@ class GitHubIssue {
   }
 
   static parseDate(dateStr) {
-    try {
-      return parseISO(dateStr);
-    } catch {
-      return null;
-    }
+    const date = parseISO(dateStr);
+    if (isValid(date)) return date;
+    return null;
   }
 
   static mapFieldName(fieldName) {
@@ -110,7 +116,7 @@ class GitHubIssue {
 
   addField(fieldName, value, fieldType) {
     const name = GitHubIssue.mapFieldName(fieldName);
-    if (['title', 'url'].includes(name)) {
+    if (['title', 'url', 'number'].includes(name)) {
       this[name] = value;
     } else {
       this.fields[name] = GitHubIssue.mapFieldValue(fieldType, value);
@@ -118,6 +124,8 @@ class GitHubIssue {
   }
 
   get issueNumber() {
+    if (this.number != null) return this.number;
+
     const match = (this.url ??= '').match(/\/issues\/(\d+)/);
     return match ? parseInt(match[1], 10) : null;
   }

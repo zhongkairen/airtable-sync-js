@@ -148,7 +148,7 @@ class AirtableRecord {
     );
 
     if (currentValue !== undefined && typeof currentValue !== typeof formattedValue) {
-      logger.warning(`Field type mismatch: ${field} - ${currentValue} != ${typeof formattedValue}`);
+      logger.warn(`Field type mismatch: ${field} - ${currentValue} != ${typeof formattedValue}`);
       return;
     }
 
