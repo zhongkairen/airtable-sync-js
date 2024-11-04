@@ -34,7 +34,7 @@ describe('GitHubGqlQuery', () => {
       const expectedData = { data: { issue: { id: 'issue-id', number: issueNumber } } };
       clientMock.query.resolves(expectedData);
 
-      const result = await uut.issue(issueNumber);
+      const result = await uut._getIssue(issueNumber);
 
       expect(clientMock.query.calledOnce).to.be.true;
       const { repoOwner, repoName } = githubConfig;
@@ -52,7 +52,7 @@ describe('GitHubGqlQuery', () => {
       clientMock.query.rejects(new Error('Query failed'));
 
       try {
-        await uut.issue(issueNumber);
+        await uut.getIssue(issueNumber);
         throw new Error('Test failed');
       } catch (err) {
         expect(err.message).to.equal('Query failed');
@@ -71,7 +71,7 @@ describe('GitHubGqlQuery', () => {
       };
       clientMock.query.resolves(expectedData);
 
-      const result = await uut.issues(afterCursor, pageSize);
+      const result = await uut._getIssues(afterCursor, pageSize);
 
       expect(clientMock.query.calledOnce).to.be.true;
       expect(clientMock.query.firstCall.args[1]).to.deep.equal({
@@ -89,7 +89,7 @@ describe('GitHubGqlQuery', () => {
       const expectedData = { data: { project: { id: 'project-id' } } };
       clientMock.query.resolves(expectedData);
 
-      const result = await uut.project();
+      const result = await uut._getProject();
 
       expect(clientMock.query.calledOnce).to.be.true;
 

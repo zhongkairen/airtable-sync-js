@@ -42,12 +42,11 @@ describe('GitHubClient', () => {
         },
       };
 
-      queryMock.project.resolves(projectResponse);
-      queryMock.handleProjectResponse.returns(projectResponse.repository.projects.nodes[0]);
+      queryMock.getProject.resolves(projectResponse.repository.projects.nodes[0]);
 
       await uut.fetchProjectId();
 
-      expect(queryMock.project.calledOnce).to.be.true;
+      expect(queryMock.getProject.calledOnce).to.be.true;
       expect(uut.config.projectId).to.equal('project-id');
     });
   });
@@ -72,16 +71,17 @@ describe('GitHubClient', () => {
         },
       };
 
-      queryMock.issues.resolves(issuesResponse);
-      queryMock.handleIssuesResponse.returns({
+      queryMock._getIssues.resolves(issuesResponse);
+
+      queryMock.getIssues.resolves({
         nodes: issuesResponse.node.items.nodes,
         pageInfo: issuesResponse.node.items.pageInfo,
       });
 
       await uut.fetchProjectItems();
 
-      expect(queryMock.issues.calledOnce).to.be.true;
-      expect(queryMock.issues.firstCall.args).to.deep.equal([null, 50]);
+      expect(queryMock.getIssues.calledOnce).to.be.true;
+      expect(queryMock.getIssues.firstCall.args).to.deep.equal([null, 50]);
       expect(uut.epicIssues).to.have.lengthOf(1);
       expect(uut.epicIssues[0].url).to.equal('url1');
     });
@@ -119,22 +119,24 @@ describe('GitHubClient', () => {
         },
       };
 
-      queryMock.issues.onFirstCall().resolves(firstPageResponse);
-      queryMock.issues.onSecondCall().resolves(secondPageResponse);
-      queryMock.handleIssuesResponse.onFirstCall().returns({
+      const firstReturnValue = {
         nodes: firstPageResponse.data.node.items.nodes,
         pageInfo: firstPageResponse.data.node.items.pageInfo,
-      });
-      queryMock.handleIssuesResponse.onSecondCall().returns({
+      };
+
+      const secondReturnValue = {
         nodes: secondPageResponse.data.node.items.nodes,
         pageInfo: secondPageResponse.data.node.items.pageInfo,
-      });
+      };
+
+      queryMock.getIssues.onFirstCall().resolves(firstReturnValue);
+      queryMock.getIssues.onSecondCall().resolves(secondReturnValue);
 
       await uut.fetchProjectItems();
 
-      expect(queryMock.issues.calledTwice).to.be.true;
-      expect(queryMock.issues.firstCall.args).to.deep.equal([null, 50]);
-      expect(queryMock.issues.secondCall.args).to.deep.equal(['cursor1', 50]);
+      expect(queryMock.getIssues.calledTwice).to.be.true;
+      expect(queryMock.getIssues.firstCall.args).to.deep.equal([null, 50]);
+      expect(queryMock.getIssues.secondCall.args).to.deep.equal(['cursor1', 50]);
       expect(uut.epicIssues).to.have.lengthOf(1);
       expect(uut.epicIssues[0].url).to.equal('url1');
     });
@@ -148,7 +150,7 @@ describe('GitHubClient', () => {
       const result = await uut.fetchIssue(1);
 
       expect(result).to.equal(issue);
-      expect(queryMock.issue.called).to.be.false;
+      expect(queryMock.getIssue.called).to.be.false;
     });
 
     it('i2 - should fetch the issue from GitHub if not in the list', async () => {
@@ -168,12 +170,11 @@ describe('GitHubClient', () => {
         },
       };
 
-      queryMock.issue.resolves(issueResponse);
       const res = {
         item: issueResponse.repository.issue,
         fields: issueResponse.repository.issue.projectItems.nodes[0],
       };
-      queryMock.handleIssueResponse.returns(res);
+      queryMock.getIssue.resolves(res);
 
       const result = await uut.fetchIssue(1);
 

@@ -6,50 +6,44 @@ const logger = new CustomLogger(import.meta.url);
 
 class GitHubClient {
   /** Client for interacting with a GitHub repository. */
+
+  /** Initializes the GitHub client with the given configuration. */
   constructor(githubConfig) {
-    /** Initializes the GitHub client with the given configuration. */
     this.githubConfig = githubConfig;
     this.query = new GitHubGqlQuery(githubConfig);
     this.epicIssues = [];
   }
 
+  /** @property config - GitHub configuration. */
   get config() {
-    /** GitHub configuration. */
     return this.githubConfig;
   }
 
+  /**
+   * Fetch the project ID for the given project name.
+   * If the project name is found, it will be set to configuration, otherwise an exception is raised.
+   * @returns {Promise<void>}
+   */
   async fetchProjectId() {
-    /**
-     * Fetch the project ID for the given project name.
-     * If the project name is found, it will be set to configuration, otherwise an exception is raised.
-     */
-    const response = await this.query.project();
-
-    const project = this.query.handleProjectResponse(response);
+    const project = await this.query.getProject();
     this.githubConfig.projectId = project?.id;
   }
 
   async fetchProjectItems(pageSize = 50, _testPageLimit = undefined) {
     /** Fetch items from the GitHub project and their field values. */
-    let endCursor = null;
-    let hasNextPage = true;
-    let totalItems = 0;
-
     logger.verbose(
       `Fetching issues for project: ${this.githubConfig.projectName} (${this.githubConfig.projectId})`
     );
 
-    while (hasNextPage) {
-      const response = await this.query.issues(endCursor, pageSize);
-      const { nodes, pageInfo } = this.query.handleIssuesResponse(response);
-
+    let totalItems = 0;
+    for (let endCursor = null, hasNextPage = true; hasNextPage; ) {
+      const { nodes, pageInfo } = await this.query.getIssues(endCursor, pageSize);
       ({ hasNextPage, endCursor } = pageInfo);
-
       totalItems += this._handleIssuesData(nodes);
-
       if (_testPageLimit !== undefined && totalItems >= _testPageLimit * pageSize) break;
     }
 
+    // Log the epic issues found
     logger.verbose(`Found ${this.epicIssues.length} epic issues out of ${totalItems} items`);
     this.epicIssues.forEach((issue) => {
       logger.debug(`${issue.issueNumber} - ${issue.title}`);
@@ -61,8 +55,7 @@ class GitHubClient {
     const issue = this.getIssue(issueNumber);
     if (issue) return issue;
 
-    const response = await this.query.issue(issueNumber);
-    const { item, fields } = this.query.handleIssueResponse(response);
+    const { item, fields } = await this.query.getIssue(issueNumber);
 
     const newIssue = new GitHubIssue(item?.url);
     newIssue.loadFields(item, fields);
