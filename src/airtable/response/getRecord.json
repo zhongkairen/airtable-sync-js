@@ -1,0 +1,9 @@
+{
+  "_comment": "Pseudo response from Airtable Web API, real response will be different",
+  "id": "rec123",
+  "fields": {
+    "Issue Number": "123",
+    "Title": "Test Issue",
+    "Issue Link": ""
+  }
+}

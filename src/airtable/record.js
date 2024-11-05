@@ -3,58 +3,88 @@ import { CustomLogger } from '../custom-logger.js';
 import { __filename__ } from '../path-util.js';
 const logger = new CustomLogger(__filename__(import.meta.url));
 
-// Convert the class to JavaScript by removing TypeScript-specific syntax
+/**
+ * Class representing an Airtable record.
+ */
 class AirtableRecord {
-  // List of compulsory fields for the record.
+  /**
+   * List of compulsory fields for the record.
+   * @type {array<string>}
+   */
   static _requiredFields = ['Title', 'Issue Link', 'Issue Number'];
 
-  // Record dictionary to store the record data.
-  _recordDict;
-
-  // Dictionary to store the updated fields.
-  _updatedFields;
-
   constructor(recordDict) {
+    // Record dictionary to store the record data.
     this._recordDict = recordDict;
+    // Dictionary to store the updated fields.
     this._updatedFields = {};
   }
 
+  /**
+   * ID of the record.
+   * @readonly
+   * @returns {string} - The ID of the record.
+   */
   get id() {
     // ID of the record.
     return this._recordDict.id;
   }
 
+  /**
+   * Title of the record.
+   * @readonly
+   * @returns {string} - The title of the record.
+   */
   get title() {
     // Title of the record.
     return this._recordDict.fields?.Title || '';
   }
 
+  /**
+   * Issue number in the record, corresponds to the GitHub issue number.
+   * @readonly
+   * @returns {number | undefined} - The issue number; undefined if field is not present.
+   */
   get issueNumber() {
     // Issue number in the record, corresponds to the GitHub issue number.
-    return Number(this._recordDict.fields?.['Issue Number']);
+    const issueNum = this._recordDict.fields?.['Issue Number'];
+    return issueNum != null ? Number(issueNum) : undefined;
   }
 
+  /**
+   * Link to the GitHub issue in the record.
+   * @readonly
+   * @returns {string} - The issue link; empty string if field is not present.
+   */
   get issueLink() {
     // Link to the GitHub issue in the record.
-    return this._recordDict.fields?.['Issue Link'] || '';
+    return this._recordDict.fields?.['Issue Link'] ?? '';
   }
 
+  /**
+   * Repository name extracted from the issue link.
+   * @readonly
+   * @returns {string | undefined} - The repository name; undefined if required pattern is not present.
+   */
   get repoName() {
     // Repository name extracted from the issue link.
+    if (!this.issueLink) return undefined;
     const pathParts = new URL(this.issueLink).pathname.split('/');
-    const index = pathParts.indexOf('issues');
-    if (index !== -1) {
-      return pathParts[index - 1];
-    } else {
-      throw new Error(`Invalid issue link format: ${this.issueLink}`);
-    }
+    const index = pathParts.lastIndexOf('issues');
+    if (index < 2) return undefined;
+    return pathParts[index - 1];
   }
 
+  /**
+   * Updated fields in the record.
+   * @readonly
+   * @returns {object} - Dictionary containing the record's ID and updated fields.
+   */
   get updatedFields() {
-    // Dictionary containing the record's ID and updated fields.
     return { id: this.id, fields: this._updatedFields };
   }
 
+  /// todo: refactor, as the Airtable API is different in js.
   commitChanges(updatedRecord) {
     // Commit changes to the record by comparing the provided updated fields with the current fields.
     let error = null;
@@ -99,6 +129,7 @@ class AirtableRecord {
     return [changes, error];
   }
 
+  /// todo: on hold, schema might not be available
   static validateSchema(schema) {
     // Validate that the provided schema contains all required fields.
     const missingFields = this._requiredFields.filter((field) => !(field in schema));
@@ -109,6 +140,9 @@ class AirtableRecord {
     return [valid, error];
   }
 
+  /**
+   * @returns {string} - String representation of the object.
+   */
   toString() {
     // String representation of the object.
     const fieldsStr = Object.entries(this._recordDict.fields)
@@ -123,9 +157,14 @@ class AirtableRecord {
     return `${String(this.issueNumber).padStart(5)} ${this.repoName} ${this.title.slice(
       0,
       16
-    )} | '${fieldsStr}'`;
+    )} | ${fieldsStr}`;
   }
 
+  /**
+   * Set the value of a field in the record.
+   * @param {string} field - The field to set.
+   * @returns {object} - updated fields.
+   */
   setFields(fields) {
     // Set multiple fields for the record.
     for (const [field, value] of Object.entries(fields)) {
@@ -134,10 +173,16 @@ class AirtableRecord {
     return this.updatedFields;
   }
 
+  /**
+   * Set the value of a specified field in the record for later update.
+   * @param {*} field
+   * @param {*} value
+   * @returns {void}
+   */
   _setField(field, value) {
     // Set the value of a specified field and marks it for update.
     const currentValue = this._recordDict.fields[field];
-    const formattedValue = this._format(value);
+    const formattedValue = AirtableRecord._stringify(value);
 
     if (currentValue === formattedValue) {
       return;
@@ -155,11 +200,13 @@ class AirtableRecord {
     this._updatedFields[field] = formattedValue;
   }
 
-  _format(value) {
-    // Format the input value based on its type.
-    if (value instanceof Date) {
-      return value.toISOString().split('T')[0]; // "YYYY-MM-DD" format
-    }
+  /**
+   * Format the input value to string.
+   * @param {*} value input value to format.
+   * @returns string representation of the value. undefined and null will mapped to literal 'undefined' and 'null'.
+   */
+  static _stringify(value) {
+    if (value instanceof Date) return value.toISOString().split('T')[0]; // "YYYY-MM-DD" format
     return String(value);
   }
 }
