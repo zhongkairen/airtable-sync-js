@@ -51,6 +51,10 @@ class UpdateResult {
     return result.join(', ');
   }
 
+  /**
+   * Returns a string representation of the updates.
+   * @returns {string} - The string representation of the updates.
+   */
   get updates() {
     return this.updated
       .map((update) => {
