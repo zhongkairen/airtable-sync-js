@@ -3,6 +3,7 @@ import { UpdateResult, UpdateStatus } from './update-result.js';
 import { CustomLogger } from '../custom-logger.js';
 import { AirtableRecord } from './record.js';
 import { __filename__ } from '../path-util.js';
+import { AirtableSchema } from './schema.js';
 
 const logger = new CustomLogger(__filename__(import.meta.url));
 
@@ -16,40 +17,38 @@ class AirtableClient {
     this.table = null; // Replace with actual type if available
     this._records = [];
     this._currentRepo = '';
-    this._tableSchema = null; // Replace with actual type if available
+    this._schema = new AirtableSchema(config);
+  }
+
+  async init() {
+    await this._schema.fetchSchema();
+    this.table = this.airtable.getTable(this.config.tableName);
   }
 
   get tableSchema() {
-    if (!this._tableSchema) {
-      this._tableSchema = this.airtable.getTableSchema(this.config.tableName);
-    }
-    return this._tableSchema;
+    return this._schema.tableSchema;
   }
 
   get tableFieldsSchema() {
-    return this._schemaFields.reduce((acc, fieldSchema) => {
+    return this.tableSchema.fields.reduce((acc, fieldSchema) => {
       acc[fieldSchema.name] = fieldSchema.type;
       return acc;
     }, {});
   }
 
-  get _schemaFields() {
-    return this.tableSchema.fields;
-  }
-
   fieldInSchema(fieldName) {
-    return this._schemaFields.some((fieldSchema) => fieldSchema.name === fieldName);
+    return this.tableSchema.fields.some((fieldSchema) => fieldSchema.name === fieldName);
   }
 
-  readRecords() {
+  async readRecords() {
     logger.verbose(
       `Reading Airtable records from base: ${this.config.appId} table: ${this.config.tableName} view: '${this.config.viewName}'`
     );
 
-    this.airtable.list(this.config.tableName).then((records) => {
-      console.log(records);
-      this._records = records.map((entry) => new AirtableRecord(entry));
-    });
+    const records = await this.airtable.list(this.config.tableName);
+
+    console.log(records);
+    this._records = records.map((entry) => new AirtableRecord(entry));
 
     const recordsLog = this.records
       .map((record) => `    ${record.issueNumber} ${record.title}`)
@@ -77,8 +76,8 @@ class AirtableClient {
     return this.recordsInCurrentRepo.find((record) => record.id === id);
   }
 
-  batchUpdate(updateDictList) {
-    const updatedRecordList = this.table.batchUpdate(updateDictList);
+  async batchUpdate(updateDictList) {
+    const updatedRecordList = await this.table.batchUpdate(updateDictList);
     const syncResult = new UpdateResult();
 
     updatedRecordList.forEach((updatedRecord) => {

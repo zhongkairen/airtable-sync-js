@@ -22,6 +22,11 @@ class CustomLogger {
       ),
       transports: [new winston.transports.Console()],
     });
+
+    if (CustomLogger.globalLogLevel === 'silent') {
+      console.log('Logger is set to silent mode');
+      this.logger.transports.forEach((t) => (t.silent = true));
+    }
   }
 
   info(message, ...args) {
