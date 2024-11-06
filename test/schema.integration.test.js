@@ -1,15 +1,12 @@
 import { expect } from 'chai';
-import fs from 'fs';
+// import fs from 'fs';
 import { AirtableSchema } from '../src/airtable/schema.js';
-import { PathUtil } from '../src/path-util.js';
+// import { PathUtil } from '../src/path-util.js';
+import { loadConfig } from './config-loader.js';
 import exp from 'constants';
 
 describe('AirtableSchema - Integration Test', () => {
-  const config = JSON.parse(fs.readFileSync(PathUtil.CONFIG_FILE_PATH, 'utf8'));
-  const airtableConfig = config.airtable;
-  const tokenPath = PathUtil.expandHomeDir(airtableConfig.tokenPath); // Expand token path
-  const token = fs.readFileSync(tokenPath, 'utf8').trim();
-  airtableConfig.token = token;
+  const { airtable: airtableConfig } = loadConfig();
   airtableConfig.viewName = 'Grid view';
 
   let airtableSchema;

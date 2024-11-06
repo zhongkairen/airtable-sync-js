@@ -51,6 +51,10 @@ class UpdateResult {
     return result.join(', ');
   }
 
+  get length() {
+    return this.updated.length + this.unchanged.length + this.failed.length;
+  }
+
   /**
    * Returns a string representation of the updates.
    * @returns {string} - The string representation of the updates.

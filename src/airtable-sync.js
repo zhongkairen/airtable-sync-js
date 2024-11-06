@@ -8,13 +8,12 @@ import { CustomLogger } from './custom-logger.js';
 const logger = new CustomLogger(import.meta.url);
 
 export class AirtableSync {
-  static _fieldMap = {};
-
   constructor(airtableConfig, githubConfig) {
     this.airtableConfig = airtableConfig;
     this.airtable = new AirtableClient(airtableConfig);
     this.github = new GitHubClient(githubConfig);
-    AirtableSync._fieldMap = Object.entries(githubConfig.fieldMap).reduce((acc, [k, v]) => {
+    // todo change configuration structure, so that field mapping is not part of github config
+    this.#fieldMap = Object.entries(githubConfig.fieldMap).reduce((acc, [k, v]) => {
       acc[GitHubIssue.mapFieldName(k)] = v;
       return acc;
     }, {});
@@ -22,61 +21,11 @@ export class AirtableSync {
     this.airtable.currentRepo = githubConfig.repoName || '';
   }
 
-  readRecords() {
-    // Read all records in Airtable
-    this.airtable.readRecords();
-  }
-
-  readIssues() {
-    // Read all issues in GitHub
-    this.github.fetchProjectId();
-    this.github.fetchProjectItems();
-  }
-
-  get fieldMap() {
-    // Map the fields from GitHub to Airtable
-    return AirtableSync._fieldMap;
-  }
-
-  _verifySyncFields() {
-    // Verify the fields to be synced are in the Airtable table schema
-    const missingFields = [];
-
-    for (const fieldName of Object.values(this.fieldMap)) {
-      if (!this.airtable.fieldInSchema(fieldName)) {
-        missingFields.push(fieldName);
-      }
-    }
-
-    if (missingFields.length > 0) {
-      const stringify = (x) => x.map((item) => `"${item}"`).join(', ');
-      logger.error(
-        `Unknown field(s): ${stringify(
-          missingFields
-        )} not found in Airtable table schema: ${stringify(
-          Object.keys(this.airtable.tableFieldsSchema)
-        )}.`
-      );
-    }
-
-    return missingFields.length === 0;
-  }
-
-  _verifyRecordField() {
-    // Verify the record field against the Airtable table fields schema
-    const [valid, error] = AirtableRecord.validateSchema(this.airtable.tableFieldsSchema);
-    if (error) {
-      logger.error(error);
-    }
-    return valid;
-  }
-
   async sync() {
     // Reconcile the records in Airtable with the issues in GitHub
-    this._prepSync();
-    return;
+    this.#prepSync();
 
-    const updateDictList = [];
+    const recordsToUpdate = [];
 
     logger.verbose(
       `Syncing ${this.airtable.recordsInCurrentRepo.length} record(s) from ` +
@@ -84,63 +33,94 @@ export class AirtableSync {
     );
 
     for (const record of this.airtable.recordsInCurrentRepo) {
-      const issue = await this._getIssue(record);
-      const updateDict = this._updateFields(record, issue);
-      if (updateDict) {
-        updateDictList.push(updateDict);
+      // todo: can we get it from cache?
+      // const issue = await this.#getIssue(record);
+      const issue = this.github.epicIssues.find((issue) => issue.number === record.issueNumber);
+      if (!issue) {
+        logger.warn(`Issue ${record.issueNumber} not found in GitHub.`);
+        continue;
       }
+      const updatedFields = this.#getUpdateFields(record, issue);
+      const recordToUpdate = record.setFields(updatedFields);
+      recordToUpdate && recordsToUpdate.push(recordToUpdate);
     }
 
     // Perform the batch update and handle the result
-    const updateResult = this.airtable.batchUpdate(updateDictList);
+    const updateResult = this.airtable.batchUpdate(recordsToUpdate);
 
     // Log the final sync result
-    this._logSyncResult(updateResult, logger);
+    this.#logSyncResult(updateResult, logger);
   }
 
-  _prepSync() {
+  get fieldMap() {
+    // Map the fields from GitHub to Airtable
+    return this.#fieldMap;
+  }
+
+  #prepSync() {
     // Prepare the synchronization process between Airtable and GitHub
-    if (!(this._verifySyncFields() && this._verifyRecordField())) {
+    if (!(this.#verifySyncFields() && this.#verifyRecordField())) {
       throw new Error('Sync aborted due to missing fields in Airtable table schema.');
     }
 
-    // Read the records from Airtable
-    this.readRecords();
+    // Read all records in Airtable
+    this.airtable.readRecords();
 
-    // Read the issues from GitHub
-    this.readIssues();
+    // Read all issues in GitHub
+    this.github.fetchProjectId();
+    this.github.fetchProjectItems();
   }
 
-  async _getIssue(record) {
+  #verifySyncFields() {
+    // Verify the fields to be synced are in the Airtable table schema
+    const missingFields = Object.values(this.fieldMap).filter(
+      (field) => !this.airtable.fieldInSchema(field)
+    );
+
+    if (missingFields.length > 0) {
+      const stringify = (x) => x.map((item) => `"${item}"`).join(', ');
+      const fields = stringify(missingFields);
+      const schema = stringify(Object.keys(this.airtable.tableFieldsSchema));
+      logger.error(`Unknown field(s): ${fields} not found in Airtable table schema: ${schema}.`);
+    }
+
+    return missingFields.length === 0;
+  }
+
+  #verifyRecordField() {
+    // Verify the record field against the Airtable table fields schema
+    const { valid, error } = AirtableRecord.validateSchema(this.airtable.tableFieldsSchema);
+    if (error) {
+      logger.error(error);
+    }
+    return valid;
+  }
+
+  async #getIssue(record) {
     // Retrieve the GitHub issue or create one from an Airtable record
     return await this.github.fetchIssue(record.issueNumber);
   }
 
-  _logSyncResult(syncResult, logger) {
+  #logSyncResult(syncResult, logger) {
     // Log the final sync result based on update counts
-    if (syncResult.error) {
-      logger.error(syncResult.error);
-    }
+    if (syncResult.error) logger.error(syncResult.error);
 
-    if (syncResult.updates) {
-      logger.verbose('\n' + syncResult.updates);
-    }
+    if (syncResult.updates) logger.verbose('\n' + syncResult.updates);
 
     logger.info(`synced ${this.airtable.recordsInCurrentRepo.length} record(s): ${syncResult}`);
   }
 
-  _updateFields(record, issue) {
-    // Update the fields in the Airtable record (target) from the GitHub issue (source)
-    const updatedFields = {};
-
-    for (const [githubField, airtableField] of Object.entries(this.fieldMap)) {
-      const value = issue.fields[githubField];
-      if (value && this.airtable.fieldInSchema(airtableField)) {
-        updatedFields[airtableField] = value;
-      }
-    }
-
-    // Set the filtered fields to the record
-    return record.setFields(updatedFields);
+  /**
+   * Compare the fields in the Airtable record with the GitHub issue and return the updated fields.
+   * @param {*} record destination record
+   * @param {*} issue source issue
+   * @returns {object} key-value pairs of fields with different values
+   */
+  #getUpdateFields(record, issue) {
+    return Object.entries(this.fieldMap).reduce((updatedFields, [githubField, airtableField]) => {
+      if (this.airtable.fieldInSchema(airtableField))
+        updatedFields[airtableField] = issue.fields[githubField];
+      return acc;
+    }, {});
   }
 }

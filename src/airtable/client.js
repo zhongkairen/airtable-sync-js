@@ -1,4 +1,4 @@
-import { Airtablet } from './airtablet.js';
+import AirtablePlus from 'airtable-plus';
 import { UpdateResult, UpdateStatus } from './update-result.js';
 import { CustomLogger } from '../custom-logger.js';
 import { AirtableRecord } from './record.js';
@@ -9,106 +9,181 @@ const logger = new CustomLogger(import.meta.url);
 class AirtableClient {
   constructor(config) {
     this.config = config;
-    this.airtable = new Airtablet({
-      baseId: this.config.appId,
-      apiKey: this.config.token,
-    });
-    this.table = null; // Replace with actual type if available
-    this._records = [];
-    this._currentRepo = '';
-    this._schema = new AirtableSchema(config);
+
+    // Configuration for AirtablePlus
+    const { baseId: baseID, token: apiKey, tableName, viewName } = config;
+    this.airtable = new AirtablePlus({ baseID, apiKey, tableName });
+
+    this.viewName = viewName; // Optional view name
+    this.#records = [];
+    this.#currentRepo = '';
+    this.#schema = new AirtableSchema(config);
   }
 
+  /** @type {Array<AirtableRecord>} */
+  #records;
+
+  /** @type {string} */
+  #currentRepo;
+
+  /** @type {AirtableSchema} */
+  #schema;
+
+  /**
+   * Initialize the Airtable client
+   * @returns {Promise<void>}
+   */
   async init() {
-    await this._schema.fetchSchema();
-    this.table = this.airtable.getTable(this.config.tableName);
+    await this.#schema.fetchSchema();
   }
 
-  get tableSchema() {
-    return this._schema.tableSchema;
-  }
-
-  get tableFieldsSchema() {
-    return this.tableSchema.fields.reduce((acc, fieldSchema) => {
-      acc[fieldSchema.name] = fieldSchema.type;
-      return acc;
-    }, {});
-  }
-
+  /**
+   * Check if a field is in the schema
+   * @param {string} fieldName - The name of the field
+   * @returns boolean, true if the field is in the schema
+   */
   fieldInSchema(fieldName) {
-    return this.tableSchema.fields.some((fieldSchema) => fieldSchema.name === fieldName);
+    return (this.tableSchema?.fields ?? []).some((field) => field.name === fieldName);
   }
 
-  async readRecords() {
+  /**
+   * Read records from Airtable
+   * @returns {Promise<void>}
+   */
+  async readRecords(maxRecords = Infinity) {
     logger.verbose(
       `Reading Airtable records from base: ${this.config.appId} table: ${this.config.tableName} view: '${this.config.viewName}'`
     );
 
-    const records = await this.airtable.list(this.config.tableName);
+    const options = {
+      ...(maxRecords < Infinity ? { maxRecords } : {}), // Only include maxRecords if it is defined
+      ...(this.viewName ? { view: this.viewName } : {}), // Only include view if viewName is defined
+    };
 
-    console.log(records);
-    this._records = records.map((entry) => new AirtableRecord(entry));
+    const records = await this.airtable.read(options);
+    this._records = records;
+
+    // console.log(records);
+    this.#records = records.map((entry) => new AirtableRecord(entry));
 
     const recordsLog = this.records
       .map((record) => `    ${record.issueNumber} ${record.title}`)
       .join('\n');
     logger.debug(`all records: \n${recordsLog}`);
+
+    if (records.length > 0) {
+      const rec = records[0];
+      console.log('records[0]:', JSON.stringify(rec, null, 2));
+      // logger.warn('No records found in Airtable');
+    }
   }
 
-  get currentRepo() {
-    return this._currentRepo;
-  }
-
-  set currentRepo(newRepo) {
-    this._currentRepo = newRepo;
-  }
-
-  get records() {
-    return this._records;
-  }
-
-  get recordsInCurrentRepo() {
-    return this.records.filter((record) => record.repoName === this.currentRepo);
-  }
-
-  getRecordById(id) {
-    return this.recordsInCurrentRepo.find((record) => record.id === id);
-  }
-
-  async batchUpdate(updateDictList) {
-    const updatedRecordList = await this.table.batchUpdate(updateDictList);
+  /**
+   * Batch update multiple records in Airtable
+   * @param {Array<{id: string, fields: object}>} recordsToUpdate - An array of objects with the fields to update
+   * @returns {UpdateResult} - the result of the update operation
+   */
+  async batchUpdate(recordsToUpdate) {
     const syncResult = new UpdateResult();
 
-    updatedRecordList.forEach((updatedRecord) => {
-      const recordId = updatedRecord.id;
-      const record = this.getRecordById(recordId);
-      const issueNumber = record?.issueNumber;
-      let changes = null;
-      let error = null;
-      let status;
+    for (const record of recordsToUpdate) {
+      const { id, fields } = record;
+      const updatedRecord = await this.airtable.update(id, fields);
+      this.#handleUpdatedRecord(updatedRecord, syncResult);
+    }
 
-      if (!record) {
-        error = `record ${recordId} not found`;
-        status = UpdateStatus.FAILED;
-      } else {
-        [changes, error] = record.commitChanges(updatedRecord);
-        status = changes
+    return syncResult;
+  }
+
+  #handleUpdatedRecord(updatedRecord, syncResult) {
+    const recordId = updatedRecord.id;
+    const record = this.findRecordById(recordId);
+    const issueNumber = record?.issueNumber;
+    let changes = {};
+    let error;
+    let status;
+
+    if (!record) {
+      error = `record ${recordId} not found`;
+      status = UpdateStatus.FAILED;
+    } else {
+      // todo: fix this, changes seems to be wrong
+      ({ changes, error } = record.commitChanges(updatedRecord));
+      status =
+        Object.keys(changes).length > 0
           ? UpdateStatus.UPDATED
           : error
           ? UpdateStatus.FAILED
           : UpdateStatus.UNCHANGED;
-      }
+    }
 
-      const context = {
-        id: recordId,
-        issueNumber: issueNumber,
-        changes: changes,
-        error: error,
-      };
-      syncResult.addRecordStatus(context, status);
-    });
-
+    const context = {
+      id: recordId,
+      issueNumber,
+      changes,
+      error,
+    };
+    syncResult.addRecordStatus(context, status);
     return syncResult;
+  }
+
+  findRecordById(id) {
+    return this.recordsInCurrentRepo.find((record) => record.id === id);
+  }
+
+  /**
+   * @readonly
+   * @returns {object} The schema of the Airtable table
+   */
+  get tableSchema() {
+    return this.#schema?.tableSchema ?? {};
+  }
+
+  /**
+   * @readonly
+   * @returns {object} field name to type map of the Airtable table
+   */
+  get tableFieldsSchema() {
+    return (this.tableSchema?.fields ?? []).reduce((acc, fieldSchema) => {
+      acc[fieldSchema.name] = fieldSchema.type;
+      return acc;
+    }, {});
+  }
+
+  /**
+   * @readonly
+   * @returns {string} The name of the current repository
+   * @deprecated - seems not used
+   */
+  get currentRepo() {
+    return this.#currentRepo;
+  }
+
+  /**
+   * Set the current repository name
+   * @param {string} newRepo - The name of the new repository
+   * @deprecated - seems not used
+   */
+  set currentRepo(newRepo) {
+    this.#currentRepo = newRepo;
+  }
+
+  /**
+   * @readonly
+   * @returns {Array<AirtableRecord>} An array of all records
+   * @deprecated - seems not used
+   */
+  get records() {
+    return this.#records;
+  }
+
+  /**
+   * @readonly
+   * @returns {Array<AirtableRecord>} An array of all records in the current repository
+   */
+  get recordsInCurrentRepo() {
+    if (!this.currentRepo) return this.records;
+    return this.records.filter((record) => record.repoName === this.currentRepo);
   }
 }
 

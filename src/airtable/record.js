@@ -15,7 +15,7 @@ class AirtableRecord {
 
   constructor(recordDict) {
     // Record dictionary to store the record data.
-    this._recordDict = recordDict;
+    this._recordDict = recordDict ?? {};
     // Dictionary to store the updated fields.
     this._updatedFields = {};
   }
@@ -37,7 +37,7 @@ class AirtableRecord {
    */
   get title() {
     // Title of the record.
-    return this._recordDict.fields?.Title || '';
+    return this._recordDict.fields?.Title ?? '';
   }
 
   /**
@@ -59,6 +59,18 @@ class AirtableRecord {
   get issueLink() {
     // Link to the GitHub issue in the record.
     return this._recordDict.fields?.['Issue Link'] ?? '';
+  }
+
+  /**
+   * @readonly
+   * @type {object} - Dictionary containing the record's fields.
+   */
+  get fields() {
+    return this._recordDict?.fields ?? {};
+  }
+
+  getField(fieldName) {
+    return this.fields[fieldName];
   }
 
   /**
@@ -84,7 +96,18 @@ class AirtableRecord {
     return { id: this.id, fields: this._updatedFields };
   }
 
-  /// todo: refactor, as the Airtable API is different in js.
+  /**
+   * Identify the record by the provided field and value.
+   * @param {string} fieldName
+   * @param {*} value
+   * @returns boolean - true if the record is identified by the provided field and value.
+   */
+  identify(fieldName, value) {
+    // Identify the record by the provided field and value.
+    return this._recordDict.fields[fieldName] === value;
+  }
+
+  /// todo: might need refactoring, Airtable API update method return value could be different
   commitChanges(updatedRecord) {
     // Commit changes to the record by comparing the provided updated fields with the current fields.
     let error = null;
@@ -118,18 +141,30 @@ class AirtableRecord {
 
       if (mismatchFields.length > 0) {
         const mismatches = mismatchFields
-          .map((field) => `${field.field}: ${field.expected} != ${field.actual}`)
+          .map(
+            (field) =>
+              `${field.field}: expected ${field.expected}(${typeof field.expected}) != ${
+                field.actual
+              }(${typeof field.actual}) actual`
+          )
           .join(', ');
-        error = `Failed to update fields: ${mismatches}.`;
+        // Some fields has unexpected values than the provided updated values
+        error = `Failed to update fields[mis]: ${mismatches}.`;
       } else if (Object.keys(this._updatedFields).length > 0) {
-        error = `Failed to update fields: ${Object.keys(this._updatedFields).join(', ')}.`;
+        // Some fields were left uncommitted
+        error = `Failed to update fields[rec]: ${Object.keys(this._updatedFields).join(', ')}.`;
       }
     }
 
-    return [changes, error];
+    return { changes, error };
   }
 
-  /// todo: on hold, schema might not be available
+  /**
+   * Validate if the required fields are consistent with the provided schema.
+   * i.e. the assumed fields are indeed provided by the airtable endpoint for the base.
+   * @param {object} schema
+   * @returns {object} - Tuple of the validation result `valid` and `error` message.
+   */
   static validateSchema(schema) {
     // Validate that the provided schema contains all required fields.
     const missingFields = this._requiredFields.filter((field) => !(field in schema));
@@ -137,7 +172,7 @@ class AirtableRecord {
     const error = valid
       ? null
       : `Required fields ${missingFields} are not found in schema: ${Object.keys(schema)}`;
-    return [valid, error];
+    return { valid, error };
   }
 
   /**
@@ -206,6 +241,8 @@ class AirtableRecord {
    * @returns string representation of the value. undefined and null will mapped to literal 'undefined' and 'null'.
    */
   static _stringify(value) {
+    if (typeof value === 'number') return value;
+    if (value === null) return ''; // null value is treated as empty string to clear a field
     if (value instanceof Date) return value.toISOString().split('T')[0]; // "YYYY-MM-DD" format
     return String(value);
   }
