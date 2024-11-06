@@ -2,10 +2,9 @@ import { Airtablet } from './airtablet.js';
 import { UpdateResult, UpdateStatus } from './update-result.js';
 import { CustomLogger } from '../custom-logger.js';
 import { AirtableRecord } from './record.js';
-import { __filename__ } from '../path-util.js';
 import { AirtableSchema } from './schema.js';
 
-const logger = new CustomLogger(__filename__(import.meta.url));
+const logger = new CustomLogger(import.meta.url);
 
 class AirtableClient {
   constructor(config) {

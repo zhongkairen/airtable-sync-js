@@ -1,7 +1,7 @@
 import { URL } from 'url';
 import { CustomLogger } from '../custom-logger.js';
-import { __filename__ } from '../path-util.js';
-const logger = new CustomLogger(__filename__(import.meta.url));
+
+const logger = new CustomLogger(import.meta.url);
 
 /**
  * Class representing an Airtable record.

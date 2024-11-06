@@ -1,7 +1,6 @@
 import { expect } from 'chai';
 import sinon from 'sinon';
 import { CustomLogger } from '../src/custom-logger.js';
-CustomLogger.setLogLevel('silent');
 import { AirtableSchema } from '../src/airtable/schema.js';
 
 describe('AirtableSchema', () => {
@@ -9,11 +8,11 @@ describe('AirtableSchema', () => {
   let fetchStub;
   let loggerMock;
 
-  before(() => {});
+  before(() => {
+    CustomLogger.setLogLevel('silent');
+  });
 
   beforeEach(() => {
-    // loggerMock = sinon.createStubInstance(CustomLogger);
-
     uut = new AirtableSchema({
       token: 'fakeToken',
       baseId: 'fakeBaseId',

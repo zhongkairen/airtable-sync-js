@@ -1,16 +1,26 @@
 // custom-logger.js
 import winston from 'winston';
 import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __relativePath = (metaUrl) => {
+  const baseDir = process.cwd();
+  const absolutePath = fileURLToPath(metaUrl);
+  const relativePath = path.relative(baseDir, absolutePath);
+  return path.relative(baseDir, absolutePath);
+};
 
 class CustomLogger {
   static globalLogLevel = 'info'; // Default log level
+  static instances = [];
 
   static setLogLevel(logLevel) {
     CustomLogger.globalLogLevel = logLevel;
+    CustomLogger.instances.forEach((instance) => instance.updateSilentMode());
   }
 
   constructor(filePath) {
-    const filename = path.basename(filePath);
+    const filename = __relativePath(filePath);
     this.logger = winston.createLogger({
       level: CustomLogger.globalLogLevel,
       format: winston.format.combine(
@@ -22,11 +32,14 @@ class CustomLogger {
       ),
       transports: [new winston.transports.Console()],
     });
+    this.updateSilentMode();
 
-    if (CustomLogger.globalLogLevel === 'silent') {
-      console.log('Logger is set to silent mode');
-      this.logger.transports.forEach((t) => (t.silent = true));
-    }
+    CustomLogger.instances.push(this);
+  }
+
+  updateSilentMode() {
+    const isSilent = CustomLogger.globalLogLevel === 'silent';
+    this.logger.transports.forEach((t) => (t.silent = isSilent));
   }
 
   info(message, ...args) {

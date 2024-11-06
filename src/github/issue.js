@@ -3,7 +3,7 @@ import { parseISO, isValid } from 'date-fns';
 import { URL } from 'url';
 import { CustomLogger } from '../custom-logger.js'; // Adjust the path as necessary
 
-const logger = new CustomLogger('GitHubIssue');
+const logger = new CustomLogger(import.meta.url);
 
 const FieldType = {
   Text: 'TEXT',

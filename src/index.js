@@ -61,7 +61,7 @@ function getConfigFilePath() {
 async function main() {
   const logLevel = parseArguments();
   CustomLogger.setLogLevel(logLevel);
-  logger = new CustomLogger(import.meta.url); // Create a new logger instance
+  logger = new CustomLogger(import.meta.url);
   logger.info(`log level set to '${logLevel}'`);
   logger.debug('Reading records from Airtable...');
   try {

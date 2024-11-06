@@ -1,7 +1,8 @@
 import fetch from 'node-fetch';
 import { CustomLogger } from '../custom-logger.js';
 
-const logger = new CustomLogger('AirtableSchema');
+const logger = new CustomLogger(import.meta.url);
+
 /**
  * Class to access the Airtable table schema.
  */
