@@ -5,5 +5,6 @@
   "bracketSpacing": true,
   "tabWidth": 2,
   "printWidth": 100,
-  "proseWrap": "always"
+  "proseWrap": "always",
+  "classProperties": "always"
 }

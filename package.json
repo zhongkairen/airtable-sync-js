@@ -4,6 +4,9 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
+    "lint": "eslint .",
+    "lint:fix": "eslint --fix .",
+    "format:class-order": "eslint --fix src -c .eslintrc.cjs",
     "start": "NODE_NO_WARNINGS=1 node --experimental-specifier-resolution=node src/index.js",
     "dev": "NODE_NO_WARNINGS=1 node --experimental-specifier-resolution=node src/index.js -d",
     "test": "mocha --reporter dot 'test/**/*.test.js' --ignore 'test/**/*.integration.test.js'",
@@ -16,7 +19,12 @@
   "devDependencies": {
     "chai": "^5.1.2",
     "chai-as-promised": "^8.0.0",
+    "eslint": "^9.14.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.2.1",
+    "eslint-plugin-sort-class-members": "^1.21.0",
     "mocha": "^10.8.2",
+    "prettier": "^3.3.3",
     "sinon": "^19.0.2"
   },
   "dependencies": {
