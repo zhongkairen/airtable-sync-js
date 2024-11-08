@@ -12,6 +12,7 @@ const __relativePath = (metaUrl) => {
 
 class CustomLogger {
   static globalLogLevel = 'info'; // Default log level
+
   static instances = [];
 
   static setLogLevel(logLevel) {

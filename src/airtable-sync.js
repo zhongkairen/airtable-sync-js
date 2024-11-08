@@ -21,6 +21,9 @@ export class AirtableSync {
     this.airtable.currentRepo = githubConfig.repoName || '';
   }
 
+  /** @type {object>} */
+  #fieldMap;
+
   async sync() {
     // Reconcile the records in Airtable with the issues in GitHub
     this.#prepSync();

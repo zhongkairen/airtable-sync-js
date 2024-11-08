@@ -95,38 +95,6 @@ class AirtableClient {
     return syncResult;
   }
 
-  #handleUpdatedRecord(updatedRecord, syncResult) {
-    const recordId = updatedRecord.id;
-    const record = this.findRecordById(recordId);
-    const issueNumber = record?.issueNumber;
-    let changes = {};
-    let error;
-    let status;
-
-    if (!record) {
-      error = `record ${recordId} not found`;
-      status = UpdateStatus.FAILED;
-    } else {
-      // todo: fix this, changes seems to be wrong
-      ({ changes, error } = record.commitChanges(updatedRecord));
-      status =
-        Object.keys(changes).length > 0
-          ? UpdateStatus.UPDATED
-          : error
-          ? UpdateStatus.FAILED
-          : UpdateStatus.UNCHANGED;
-    }
-
-    const context = {
-      id: recordId,
-      issueNumber,
-      changes,
-      error,
-    };
-    syncResult.addRecordStatus(context, status);
-    return syncResult;
-  }
-
   findRecordById(id) {
     return this.recordsInCurrentRepo.find((record) => record.id === id);
   }
@@ -184,6 +152,38 @@ class AirtableClient {
   get recordsInCurrentRepo() {
     if (!this.currentRepo) return this.records;
     return this.records.filter((record) => record.repoName === this.currentRepo);
+  }
+
+  #handleUpdatedRecord(updatedRecord, syncResult) {
+    const recordId = updatedRecord.id;
+    const record = this.findRecordById(recordId);
+    const issueNumber = record?.issueNumber;
+    let changes = {};
+    let error;
+    let status;
+
+    if (!record) {
+      error = `record ${recordId} not found`;
+      status = UpdateStatus.FAILED;
+    } else {
+      // todo: fix this, changes seems to be wrong
+      ({ changes, error } = record.commitChanges(updatedRecord));
+      status =
+        Object.keys(changes).length > 0
+          ? UpdateStatus.UPDATED
+          : error
+            ? UpdateStatus.FAILED
+            : UpdateStatus.UNCHANGED;
+    }
+
+    const context = {
+      id: recordId,
+      issueNumber,
+      changes,
+      error,
+    };
+    syncResult.addRecordStatus(context, status);
+    return syncResult;
   }
 }
 

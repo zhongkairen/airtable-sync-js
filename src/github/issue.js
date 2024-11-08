@@ -19,6 +19,23 @@ const FieldType = {
 class GitHubIssue {
   static FieldType = FieldType;
 
+  static parseDate(dateStr) {
+    const date = parseISO(dateStr);
+    if (isValid(date)) return date;
+    return null;
+  }
+
+  static mapFieldName(fieldName) {
+    return fieldName.toLowerCase().replace(/ /g, '_').replace(/-/g, '_');
+  }
+
+  static mapFieldValue(fieldType, value) {
+    if (fieldType === FieldType.Date) {
+      return GitHubIssue.parseDate(value);
+    }
+    return value;
+  }
+
   constructor(url) {
     this.url = url;
     this.title = undefined;
@@ -95,23 +112,6 @@ class GitHubIssue {
 
       this.addField(fieldName, value, fieldType);
     }
-  }
-
-  static parseDate(dateStr) {
-    const date = parseISO(dateStr);
-    if (isValid(date)) return date;
-    return null;
-  }
-
-  static mapFieldName(fieldName) {
-    return fieldName.toLowerCase().replace(/ /g, '_').replace(/-/g, '_');
-  }
-
-  static mapFieldValue(fieldType, value) {
-    if (fieldType === FieldType.Date) {
-      return GitHubIssue.parseDate(value);
-    }
-    return value;
   }
 
   addField(fieldName, value, fieldType) {

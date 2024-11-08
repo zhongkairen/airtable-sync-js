@@ -13,12 +13,48 @@ class AirtableRecord {
    */
   static _requiredFields = ['Title', 'Issue Link', 'Issue Number'];
 
+  static foobar;
+
+  /**
+   * Validate if the required fields are consistent with the provided schema.
+   * i.e. the assumed fields are indeed provided by the airtable endpoint for the base.
+   * @param {object} schema
+   * @returns {object} - Tuple of the validation result `valid` and `error` message.
+   */
+  static validateSchema(schema) {
+    // Validate that the provided schema contains all required fields.
+    const missingFields = this._requiredFields.filter((field) => !(field in schema));
+    const valid = missingFields.length === 0;
+    const error = valid
+      ? null
+      : `Required fields ${missingFields} are not found in schema: ${Object.keys(schema)}`;
+    return { valid, error };
+  }
+
+  /**
+   * Format the input value to string.
+   * @param {*} value input value to format.
+   * @returns string representation of the value. undefined and null will mapped to literal 'undefined' and 'null'.
+   */
+  static _stringify(value) {
+    if (typeof value === 'number') return value;
+    if (value === null) return ''; // null value is treated as empty string to clear a field
+    if (value instanceof Date) return value.toISOString().split('T')[0]; // "YYYY-MM-DD" format
+    return String(value);
+  }
+
   constructor(recordDict) {
     // Record dictionary to store the record data.
     this._recordDict = recordDict ?? {};
     // Dictionary to store the updated fields.
     this._updatedFields = {};
   }
+
+  #debug = 'debug';
+
+  #foo = 'bar';
+
+  #bar = 'foo';
 
   /**
    * ID of the record.
@@ -160,22 +196,6 @@ class AirtableRecord {
   }
 
   /**
-   * Validate if the required fields are consistent with the provided schema.
-   * i.e. the assumed fields are indeed provided by the airtable endpoint for the base.
-   * @param {object} schema
-   * @returns {object} - Tuple of the validation result `valid` and `error` message.
-   */
-  static validateSchema(schema) {
-    // Validate that the provided schema contains all required fields.
-    const missingFields = this._requiredFields.filter((field) => !(field in schema));
-    const valid = missingFields.length === 0;
-    const error = valid
-      ? null
-      : `Required fields ${missingFields} are not found in schema: ${Object.keys(schema)}`;
-    return { valid, error };
-  }
-
-  /**
    * @returns {string} - String representation of the object.
    */
   toString() {
@@ -233,18 +253,6 @@ class AirtableRecord {
     }
 
     this._updatedFields[field] = formattedValue;
-  }
-
-  /**
-   * Format the input value to string.
-   * @param {*} value input value to format.
-   * @returns string representation of the value. undefined and null will mapped to literal 'undefined' and 'null'.
-   */
-  static _stringify(value) {
-    if (typeof value === 'number') return value;
-    if (value === null) return ''; // null value is treated as empty string to clear a field
-    if (value instanceof Date) return value.toISOString().split('T')[0]; // "YYYY-MM-DD" format
-    return String(value);
   }
 }
 
