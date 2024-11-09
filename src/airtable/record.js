@@ -149,6 +149,10 @@ class AirtableRecord {
         const clearingValue = expectedValue === null && value === undefined;
         if (expectedValue === value || clearingValue) {
           const oldValue = this.#fields[field];
+          if (clearingValue)
+            logger.debug(
+              `commitChanges() Record ${this.issueNumber} field '${field}' cleared, updated:${expectedValue} old:${oldValue} -> ${value}`
+            );
           changes[field] = { old: oldValue, new: value };
           committedFields.push(field);
           this.#fields[field] = value; // update value
@@ -205,34 +209,36 @@ class AirtableRecord {
 
   /**
    * Set the value of a field in the record.
-   * @param {string} field - The field to set.
+   * @param {object} fields - The fields object containing name-value pairs.
    * @returns {object} - updated fields.
    */
   setFields(fields) {
     // Set multiple fields for the record.
     for (const [field, value] of Object.entries(fields)) {
-      this.#setField(field, value);
+      this.#setField({ field, value });
     }
     return this.updatedFields;
   }
 
   /**
    * Set the value of a specified field in the record for later update.
-   * @param {*} field
+   * @param {string} field
    * @param {*} value
    * @returns {void}
    */
-  #setField(field, value) {
+  #setField({ field, value }) {
     // Set the value of a specified field and marks it for update.
     const currentValue = this.fields[field];
     const formattedValue = this.#mapValue(value);
 
-    if (currentValue === formattedValue) {
-      return;
-    }
+    /**
+     * @note Loose equality: If an unset value (undefined) is passed,
+     * the field will be cleared and set to null.
+     */
+    if (currentValue == formattedValue) return;
 
     logger.debug(
-      `Record ${this.issueNumber} fields '${field}': ${currentValue} -> ${formattedValue}`
+      `#setField() Record ${this.issueNumber} fields '${field}': ${currentValue} -> ${formattedValue}`
     );
 
     if (currentValue !== undefined && typeof currentValue !== typeof formattedValue) {

@@ -65,10 +65,15 @@ class AirtableClient {
 
     this.#records = records.map((entry) => new AirtableRecord(entry));
 
-    const recordsLog = this.records
-      .map((record) => `    ${record.issueNumber} ${record.title}`)
-      .join('\n');
-    logger.debug(`all records: \n${recordsLog}`);
+    logger.debug(
+      `all records: \n${this.records
+        .sort((a, b) => a.issueNumber - b.issueNumber)
+        .map(
+          (record) =>
+            `${String(record.issueNumber).padStart(5, ' ')} - ${record.id} ${record.title}`
+        )
+        .join('\n')}`
+    );
 
     if (records.length === 0) {
       logger.warn('No records found in Airtable');

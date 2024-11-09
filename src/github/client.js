@@ -45,9 +45,13 @@ class GitHubClient {
 
     // Log the epic issues found
     logger.verbose(`Found ${this.epicIssues.length} epic issues out of ${totalItems} items`);
-    this.epicIssues.forEach((issue) => {
-      logger.debug(`${issue.issueNumber} - ${issue.title}`);
-    });
+    logger.debug(
+      'this.epicIssues:\n' +
+        this.epicIssues
+          .sort((a, b) => a.issueNumber - b.issueNumber)
+          .map((issue) => `${String(issue.issueNumber).padStart(5, ' ')} - ${issue.title}`)
+          .join('\n')
+    );
   }
 
   async fetchIssue(issueNumber) {
