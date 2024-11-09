@@ -78,7 +78,13 @@ async function main() {
   }
 
   logger.info('Reading records from Airtable...');
-  await airtableSync.sync();
+
+  try {
+    await airtableSync.sync();
+  } catch (error) {
+    logger.debug(`Error syncing records: ${JSON.stringify(airtableSync.client.debugData)}`);
+    logger.error(`Error syncing records: ${error.message}`);
+  }
 }
 
 main().catch((err) => console.error(`Unexpected error: ${err.message}`));

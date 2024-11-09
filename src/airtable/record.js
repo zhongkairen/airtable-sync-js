@@ -145,7 +145,9 @@ class AirtableRecord {
         const expectedValue = this.#updatedFields[field];
         const value = newValues[field];
 
-        if (expectedValue === value) {
+        // Compare the value passed to the update request with the value in the record
+        const clearingValue = expectedValue === null && value === undefined;
+        if (expectedValue === value || clearingValue) {
           const oldValue = this.#fields[field];
           changes[field] = { old: oldValue, new: value };
           committedFields.push(field);
@@ -160,6 +162,7 @@ class AirtableRecord {
         delete this.#updatedFields[field];
       }
 
+      // Check for any mismatched fields
       if (mismatchFields.length > 0) {
         const mismatches = mismatchFields
           .map(
@@ -247,7 +250,8 @@ class AirtableRecord {
    */
   #mapValue(value) {
     if (typeof value === 'number') return value;
-    if (value === null) return ''; // null value is treated as empty string to clear a field
+    // todo - add support for other field types, currently only tested to work for text and number fields
+    if (value == null) return null; // nullish value is treated as empty string to clear a field
     if (value instanceof Date) return value.toISOString().split('T')[0]; // "YYYY-MM-DD" format
     return String(value);
   }

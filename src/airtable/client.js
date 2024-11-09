@@ -63,7 +63,6 @@ class AirtableClient {
     const records = await this.airtable.read(options);
     this._records = records;
 
-    // console.log(records);
     this.#records = records.map((entry) => new AirtableRecord(entry));
 
     const recordsLog = this.records
@@ -71,10 +70,8 @@ class AirtableClient {
       .join('\n');
     logger.debug(`all records: \n${recordsLog}`);
 
-    if (records.length > 0) {
-      const rec = records[0];
-      console.log('records[0]:', JSON.stringify(rec, null, 2));
-      // logger.warn('No records found in Airtable');
+    if (records.length === 0) {
+      logger.warn('No records found in Airtable');
     }
   }
 
@@ -88,6 +85,10 @@ class AirtableClient {
 
     for (const record of recordsToUpdate) {
       const { id, fields } = record;
+
+      this.debugData = this.debugData ?? {};
+      this.debugData[id] = fields;
+
       const updatedRecord = await this.airtable.update(id, fields);
       this.#handleUpdatedRecord(updatedRecord, syncResult);
     }
@@ -104,7 +105,7 @@ class AirtableClient {
    * @returns {object} The schema of the Airtable table
    */
   get tableSchema() {
-    return this.#schema?.tableSchema ?? {};
+    return this.#schema.tableSchema ?? {};
   }
 
   /**
@@ -112,9 +113,9 @@ class AirtableClient {
    * @returns {object} field name to type map of the Airtable table
    */
   get tableFieldsSchema() {
-    return (this.tableSchema?.fields ?? []).reduce((acc, fieldSchema) => {
-      acc[fieldSchema.name] = fieldSchema.type;
-      return acc;
+    return (this.tableSchema?.fields ?? []).reduce((fieldName2Type, field) => {
+      fieldName2Type[field.name] = field.type;
+      return fieldName2Type;
     }, {});
   }
 

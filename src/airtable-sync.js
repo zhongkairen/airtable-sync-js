@@ -10,32 +10,35 @@ const logger = new CustomLogger(import.meta.url);
 export class AirtableSync {
   constructor(airtableConfig, githubConfig) {
     this.airtableConfig = airtableConfig;
-    this.airtable = new AirtableClient(airtableConfig);
+    this.#airtableClient = new AirtableClient(airtableConfig);
     this.github = new GitHubClient(githubConfig);
     // todo change configuration structure, so that field mapping is not part of github config
-    this.#fieldMap = Object.entries(githubConfig.fieldMap).reduce((acc, [k, v]) => {
-      acc[GitHubIssue.mapFieldName(k)] = v;
-      return acc;
+    this.#fieldMap = Object.entries(githubConfig.fieldMap).reduce((g2aField, [k, v]) => {
+      g2aField[GitHubIssue.mapFieldName(k)] = v;
+      return g2aField;
     }, {});
     // Ensure only the records in the relevant repository are synced
-    this.airtable.currentRepo = githubConfig.repoName || '';
+    this.#airtableClient.currentRepo = githubConfig.repoName ?? '';
   }
 
   /** @type {object>} */
   #fieldMap;
 
+  /** @type {AirtableClient>} */
+  #airtableClient;
+
   async sync() {
     // Reconcile the records in Airtable with the issues in GitHub
-    this.#prepSync();
+    await this.#prepSync();
 
     const recordsToUpdate = [];
 
     logger.verbose(
-      `Syncing ${this.airtable.recordsInCurrentRepo.length} record(s) from ` +
-        `current_repo: ${this.airtable.currentRepo}, of total ${this.airtable.records.length} record(s).`
+      `Syncing ${this.#airtableClient.recordsInCurrentRepo.length} record(s) from ` +
+        `current_repo: ${this.#airtableClient.currentRepo}, of total ${this.#airtableClient.records.length} record(s).`
     );
 
-    for (const record of this.airtable.recordsInCurrentRepo) {
+    for (const record of this.#airtableClient.recordsInCurrentRepo) {
       // todo: can we get it from cache?
       // const issue = await this.#getIssue(record);
       const issue = this.github.epicIssues.find((issue) => issue.number === record.issueNumber);
@@ -49,7 +52,7 @@ export class AirtableSync {
     }
 
     // Perform the batch update and handle the result
-    const updateResult = this.airtable.batchUpdate(recordsToUpdate);
+    const updateResult = await this.#airtableClient.batchUpdate(recordsToUpdate);
 
     // Log the final sync result
     this.#logSyncResult(updateResult, logger);
@@ -60,30 +63,34 @@ export class AirtableSync {
     return this.#fieldMap;
   }
 
-  #prepSync() {
+  async #prepSync() {
+    await this.#airtableClient.init();
+
     // Prepare the synchronization process between Airtable and GitHub
     if (!(this.#verifySyncFields() && this.#verifyRecordField())) {
       throw new Error('Sync aborted due to missing fields in Airtable table schema.');
     }
 
     // Read all records in Airtable
-    this.airtable.readRecords();
+    await this.#airtableClient.readRecords();
 
     // Read all issues in GitHub
-    this.github.fetchProjectId();
-    this.github.fetchProjectItems();
+    await this.github.fetchProjectId();
+    await this.github.fetchProjectItems();
   }
 
   #verifySyncFields() {
     // Verify the fields to be synced are in the Airtable table schema
     const missingFields = Object.values(this.fieldMap).filter(
-      (field) => !this.airtable.fieldInSchema(field)
+      (field) => !this.#airtableClient.fieldInSchema(field)
     );
 
-    if (missingFields.length > 0) {
-      const stringify = (x) => x.map((item) => `"${item}"`).join(', ');
-      const fields = stringify(missingFields);
-      const schema = stringify(Object.keys(this.airtable.tableFieldsSchema));
+    if (Object.keys(this.#airtableClient.tableFieldsSchema).length === 0) {
+      console.log('tableSchema', JSON.stringify(this.#airtableClient.tableSchema, null, 2));
+      logger.error('Airtable table schema is empty.');
+    } else if (missingFields.length > 0) {
+      const fields = JSON.stringify(missingFields);
+      const schema = JSON.stringify(Object.keys(this.#airtableClient.tableFieldsSchema));
       logger.error(`Unknown field(s): ${fields} not found in Airtable table schema: ${schema}.`);
     }
 
@@ -92,7 +99,7 @@ export class AirtableSync {
 
   #verifyRecordField() {
     // Verify the record field against the Airtable table fields schema
-    const { valid, error } = AirtableRecord.validateSchema(this.airtable.tableFieldsSchema);
+    const { valid, error } = AirtableRecord.validateSchema(this.#airtableClient.tableFieldsSchema);
     if (error) {
       logger.error(error);
     }
@@ -110,7 +117,9 @@ export class AirtableSync {
 
     if (syncResult.updates) logger.verbose('\n' + syncResult.updates);
 
-    logger.info(`synced ${this.airtable.recordsInCurrentRepo.length} record(s): ${syncResult}`);
+    logger.info(
+      `synced ${this.#airtableClient.recordsInCurrentRepo.length} record(s): ${syncResult}`
+    );
   }
 
   /**
@@ -121,9 +130,13 @@ export class AirtableSync {
    */
   #getUpdateFields(record, issue) {
     return Object.entries(this.fieldMap).reduce((updatedFields, [githubField, airtableField]) => {
-      if (this.airtable.fieldInSchema(airtableField))
+      if (this.#airtableClient.fieldInSchema(airtableField))
         updatedFields[airtableField] = issue.fields[githubField];
-      return acc;
+      return updatedFields;
     }, {});
+  }
+
+  get client() {
+    return this.#airtableClient;
   }
 }

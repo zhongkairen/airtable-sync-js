@@ -16,39 +16,82 @@ export class AirtableSchema {
     this.tableName = tableName;
     this.tableId = tableId;
     this.viewName = viewName;
-    this._schema = {};
-    this._fetch = fetch;
+    this.#schema = {};
+    this.#fetchMock = null; // For testing
   }
 
-  _findByField(array, field, value) {
-    if (value == null) return null;
-    return (array ?? []).find((element) => element[field] === value);
+  /**
+   * Meta schema for the `tables` semantics in the airtable base.
+   * @type {object} */
+  #schema;
+
+  /** @type {function} fetch mock if needed */
+  #fetchMock;
+
+  /**
+   * Set the fetch mock for testing.
+   * @param {function} mock - The fetch mock
+   */
+  set fetchMock(mock) {
+    this.#fetchMock = mock;
   }
 
+  /**
+   * @readonly
+   * @type {object} empty object if not found
+   */
   get baseSchema() {
-    return this._schema ?? {};
+    return this.#schema ?? {};
   }
 
+  /**
+   * Schema for the table, identified by either tableId or tableName.
+   * @readonly
+   * @type {object} empty object if not found
+   */
   get tableSchema() {
-    const tableSchema = this._findByField(this.baseSchema.tables, 'tableId', this.tableId);
-    if (tableSchema != null) return tableSchema;
-
-    return this._findByField(this.baseSchema.tables, 'name', this.tableName) ?? {};
+    return (
+      this.#findByField(this.baseSchema.tables, 'tableId', this.tableId) ??
+      this.#findByField(this.baseSchema.tables, 'name', this.tableName) ??
+      {}
+    );
   }
 
+  /**
+   * Schema for the view, identified by viewName.
+   * @readonly
+   * @type {object} empty object if not found
+   */
   get viewSchema() {
-    return this._findByField(this.tableSchema.views, 'name', this.viewName) ?? {};
+    return this.#findByField(this.tableSchema.views, 'name', this.viewName) ?? {};
   }
 
+  /**
+   * Fetch the schema of the Airtable table and store it in the instance.
+   * @returns {Promise<void>} The schema of the Airtable table
+   */
   async fetchSchema() {
-    if (Object.keys(this._schema ?? {}).length) return;
+    if (Object.keys(this.#schema ?? {}).length) return;
 
     const url = `https://api.airtable.com/v0/meta/bases/${this.baseId}/tables`;
-    this._schema = await this._fetchSchema(url);
+    this.#schema = await this.#fetchSchema(url);
   }
 
-  async _fetchSchema(url) {
-    const response = await this._fetch(url, {
+  /**
+   * Find an element in the array by field-value match.
+   * @param {Array} array
+   * @param {string} field
+   * @param {*} value
+   * @returns {object} the element identified by the field-value match, undefined if not found
+   */
+  #findByField(array, field, value) {
+    if (value == null || array == null) return;
+    return array.find((element) => element[field] === value);
+  }
+
+  async #fetchSchema(url) {
+    const fetchFunc = this.#fetchMock ?? fetch;
+    const response = await fetchFunc(url, {
       method: 'GET',
       headers: this.headers,
     });
