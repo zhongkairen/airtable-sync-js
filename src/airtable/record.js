@@ -11,9 +11,7 @@ class AirtableRecord {
    * List of compulsory fields for the record.
    * @type {array<string>}
    */
-  static _requiredFields = ['Title', 'Issue Link', 'Issue Number'];
-
-  static foobar;
+  static REQUIRED_FIELDS = ['Title', 'Issue Link', 'Issue Number'];
 
   /**
    * Validate if the required fields are consistent with the provided schema.
@@ -23,7 +21,7 @@ class AirtableRecord {
    */
   static validateSchema(schema) {
     // Validate that the provided schema contains all required fields.
-    const missingFields = this._requiredFields.filter((field) => !(field in schema));
+    const missingFields = this.REQUIRED_FIELDS.filter((field) => !(field in schema));
     const valid = missingFields.length === 0;
     const error = valid
       ? null
@@ -31,70 +29,57 @@ class AirtableRecord {
     return { valid, error };
   }
 
-  /**
-   * Format the input value to string.
-   * @param {*} value input value to format.
-   * @returns string representation of the value. undefined and null will mapped to literal 'undefined' and 'null'.
-   */
-  static _stringify(value) {
-    if (typeof value === 'number') return value;
-    if (value === null) return ''; // null value is treated as empty string to clear a field
-    if (value instanceof Date) return value.toISOString().split('T')[0]; // "YYYY-MM-DD" format
-    return String(value);
-  }
-
   constructor(recordDict) {
     // Record dictionary to store the record data.
-    this._recordDict = recordDict ?? {};
+    const { id, fields } = recordDict ?? {};
+    this.#id = id;
+    this.#fields = fields ?? {};
     // Dictionary to store the updated fields.
-    this._updatedFields = {};
+    this.#updatedFields = {};
   }
 
-  #debug = 'debug';
+  /** @type {string} */
+  #id;
 
-  #foo = 'bar';
+  /** @type {object} */
+  #fields;
 
-  #bar = 'foo';
+  /** @type {object} */
+  #updatedFields;
 
   /**
-   * ID of the record.
    * @readonly
    * @returns {string} - The ID of the record.
    */
   get id() {
-    // ID of the record.
-    return this._recordDict.id;
+    return this.#id;
   }
 
   /**
-   * Title of the record.
    * @readonly
    * @returns {string} - The title of the record.
    */
   get title() {
-    // Title of the record.
-    return this._recordDict.fields?.Title ?? '';
+    return this.fields.Title ?? '';
   }
 
   /**
-   * Issue number in the record, corresponds to the GitHub issue number.
    * @readonly
    * @returns {number | undefined} - The issue number; undefined if field is not present.
    */
   get issueNumber() {
     // Issue number in the record, corresponds to the GitHub issue number.
-    const issueNum = this._recordDict.fields?.['Issue Number'];
+    const issueNum = this.fields['Issue Number'];
     return issueNum != null ? Number(issueNum) : undefined;
   }
 
   /**
-   * Link to the GitHub issue in the record.
    * @readonly
    * @returns {string} - The issue link; empty string if field is not present.
    */
   get issueLink() {
     // Link to the GitHub issue in the record.
-    return this._recordDict.fields?.['Issue Link'] ?? '';
+    return this.fields['Issue Link'] ?? '';
   }
 
   /**
@@ -102,7 +87,7 @@ class AirtableRecord {
    * @type {object} - Dictionary containing the record's fields.
    */
   get fields() {
-    return this._recordDict?.fields ?? {};
+    return this.#fields;
   }
 
   getField(fieldName) {
@@ -129,7 +114,7 @@ class AirtableRecord {
    * @returns {object} - Dictionary containing the record's ID and updated fields.
    */
   get updatedFields() {
-    return { id: this.id, fields: this._updatedFields };
+    return { id: this.id, fields: this.#updatedFields };
   }
 
   /**
@@ -140,7 +125,7 @@ class AirtableRecord {
    */
   identify(fieldName, value) {
     // Identify the record by the provided field and value.
-    return this._recordDict.fields[fieldName] === value;
+    return this.#fields[fieldName] === value;
   }
 
   /// todo: might need refactoring, Airtable API update method return value could be different
@@ -156,15 +141,15 @@ class AirtableRecord {
       const newValues = updatedRecord.fields;
       const committedFields = [];
 
-      for (const field of Object.keys(this._updatedFields)) {
-        const expectedValue = this._updatedFields[field];
+      for (const field of Object.keys(this.#updatedFields)) {
+        const expectedValue = this.#updatedFields[field];
         const value = newValues[field];
 
         if (expectedValue === value) {
-          const oldValue = this._recordDict.fields[field];
+          const oldValue = this.#fields[field];
           changes[field] = { old: oldValue, new: value };
           committedFields.push(field);
-          this._recordDict.fields[field] = value; // update value
+          this.#fields[field] = value; // update value
         } else {
           mismatchFields.push({ field, expected: expectedValue, actual: value });
         }
@@ -172,7 +157,7 @@ class AirtableRecord {
 
       // Remove marked fields
       for (const field of committedFields) {
-        delete this._updatedFields[field];
+        delete this.#updatedFields[field];
       }
 
       if (mismatchFields.length > 0) {
@@ -186,9 +171,9 @@ class AirtableRecord {
           .join(', ');
         // Some fields has unexpected values than the provided updated values
         error = `Failed to update fields[mis]: ${mismatches}.`;
-      } else if (Object.keys(this._updatedFields).length > 0) {
+      } else if (Object.keys(this.#updatedFields).length > 0) {
         // Some fields were left uncommitted
-        error = `Failed to update fields[rec]: ${Object.keys(this._updatedFields).join(', ')}.`;
+        error = `Failed to update fields[rec]: ${Object.keys(this.#updatedFields).join(', ')}.`;
       }
     }
 
@@ -200,7 +185,7 @@ class AirtableRecord {
    */
   toString() {
     // String representation of the object.
-    const fieldsStr = Object.entries(this._recordDict.fields)
+    const fieldsStr = Object.entries(this.fields)
       .map(([key, value]) => {
         if (key === 'Body' && typeof value === 'string') {
           return `${key}: ${value.slice(0, 40)}...`;
@@ -223,7 +208,7 @@ class AirtableRecord {
   setFields(fields) {
     // Set multiple fields for the record.
     for (const [field, value] of Object.entries(fields)) {
-      this._setField(field, value);
+      this.#setField(field, value);
     }
     return this.updatedFields;
   }
@@ -234,10 +219,10 @@ class AirtableRecord {
    * @param {*} value
    * @returns {void}
    */
-  _setField(field, value) {
+  #setField(field, value) {
     // Set the value of a specified field and marks it for update.
-    const currentValue = this._recordDict.fields[field];
-    const formattedValue = AirtableRecord._stringify(value);
+    const currentValue = this.fields[field];
+    const formattedValue = this.#mapValue(value);
 
     if (currentValue === formattedValue) {
       return;
@@ -252,7 +237,19 @@ class AirtableRecord {
       return;
     }
 
-    this._updatedFields[field] = formattedValue;
+    this.#updatedFields[field] = formattedValue;
+  }
+
+  /**
+   * Map the input value to type used in the update request.
+   * @param {*} value input value to format.
+   * @returns string representation of the value. undefined and null will mapped to literal 'undefined' and 'null'.
+   */
+  #mapValue(value) {
+    if (typeof value === 'number') return value;
+    if (value === null) return ''; // null value is treated as empty string to clear a field
+    if (value instanceof Date) return value.toISOString().split('T')[0]; // "YYYY-MM-DD" format
+    return String(value);
   }
 }
 
