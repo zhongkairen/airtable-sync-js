@@ -64,16 +64,19 @@ async function main() {
   logger = new CustomLogger(import.meta.url);
   logger.info(`log level set to '${logLevel}'`);
   logger.debug('Reading records from Airtable...');
+
+  let airtableSync;
   try {
     const configPath = getConfigFilePath();
     const configJson = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
     const airtableConfig = new AirtableConfig(configJson.airtable);
     const githubConfig = new GitHubConfig(configJson.github);
+
+    airtableSync = new AirtableSync(airtableConfig, githubConfig);
   } catch (error) {
     logger.error(`Error reading configuration file: ${error.message}`);
   }
 
-  const airtableSync = new AirtableSync(airtableConfig, githubConfig);
   logger.info('Reading records from Airtable...');
   await airtableSync.sync();
 }
