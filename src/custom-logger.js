@@ -6,13 +6,11 @@ import { fileURLToPath } from 'url';
 const __relativePath = (metaUrl) => {
   const baseDir = process.cwd();
   const absolutePath = fileURLToPath(metaUrl);
-  const relativePath = path.relative(baseDir, absolutePath);
   return path.relative(baseDir, absolutePath);
 };
 
 class CustomLogger {
   static globalLogLevel = 'info'; // Default log level
-
   static instances = [];
 
   static setLogLevel(logLevel) {
@@ -22,19 +20,19 @@ class CustomLogger {
 
   constructor(filePath) {
     const filename = __relativePath(filePath);
+
     this.logger = winston.createLogger({
       level: CustomLogger.globalLogLevel,
       format: winston.format.combine(
         winston.format.timestamp(),
         winston.format.printf((info) => {
-          const callerInfo = this.getCallerInfo();
-          return `${info.timestamp} ${info.level}: [${filename}:${callerInfo.lineno}] ${info.message}`;
+          const { lineno } = info.callerInfo || { lineno: 'unknown' };
+          return `${info.timestamp} ${info.level}: [${filename}:${lineno}] ${info.message}`;
         })
       ),
       transports: [new winston.transports.Console()],
     });
     this.updateSilentMode();
-
     CustomLogger.instances.push(this);
   }
 
@@ -43,34 +41,56 @@ class CustomLogger {
     this.logger.transports.forEach((t) => (t.silent = isSilent));
   }
 
+  logWithCallerInfo(level, message, ...args) {
+    // Capture caller information each time a log method is invoked
+    const callerInfo = this.getCallerInfo();
+
+    // Log with caller info attached
+    this.logger.log({
+      level,
+      message,
+      callerInfo,
+      ...args,
+    });
+  }
+
   info(message, ...args) {
-    this.logger.info(message, ...args);
+    this.logWithCallerInfo('info', message, ...args);
   }
 
   debug(message, ...args) {
-    this.logger.debug(message, ...args);
+    this.logWithCallerInfo('debug', message, ...args);
   }
 
   warn(message, ...args) {
-    this.logger.warn(message, ...args);
+    this.logWithCallerInfo('warn', message, ...args);
   }
 
   verbose(message, ...args) {
-    this.logger.verbose(message, ...args);
+    this.logWithCallerInfo('verbose', message, ...args);
   }
 
   error(message, ...args) {
-    this.logger.error(message, ...args);
+    this.logWithCallerInfo('error', message, ...args);
   }
 
   getCallerInfo() {
-    const stack = new Error().stack;
-    const lines = stack.split('\n');
-    const callerLine = lines[3] || lines[2];
+    const stack = new Error().stack.split('\n');
 
-    const match = callerLine.match(/at (.+) \((.+):(\d+):\d+\)|at (.+) (.+):(\d+):\d+/);
+    // Skip the frames related to internal logger functions
+    let callerLine;
+    for (let i = 2; i < stack.length; i++) {
+      if (!stack[i].includes('CustomLogger') && !stack[i].includes('winston')) {
+        callerLine = stack[i];
+        break;
+      }
+    }
+
+    const match =
+      callerLine && callerLine.match(/at\s+(?:[^(]+)?\s*\(?file:\/\/\/(.+?):(\d+):\d+\)?/);
+
     if (match) {
-      const lineno = match[3] || match[6];
+      const lineno = match[2];
       return { lineno };
     }
 
