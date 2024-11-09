@@ -61,7 +61,6 @@ class AirtableClient {
     };
 
     const records = await this.airtable.read(options);
-    this._records = records;
 
     this.#records = records.map((entry) => new AirtableRecord(entry));
 
@@ -75,7 +74,7 @@ class AirtableClient {
         .join('\n')}`
     );
 
-    if (records.length === 0) {
+    if (this.records.length === 0) {
       logger.warn('No records found in Airtable');
     }
   }

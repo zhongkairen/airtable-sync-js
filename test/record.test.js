@@ -6,7 +6,7 @@ describe('AirtableRecord', () => {
     it('should create an instance correctly', () => {
       const recordDict = {};
       const record = new AirtableRecord(recordDict);
-      expect(record._updatedFields).to.be.empty;
+      expect(record.updatedFields.fields).to.be.empty;
     });
   });
 
@@ -147,8 +147,11 @@ describe('AirtableRecord', () => {
       const recordDict = {
         id: 'rec123',
       };
+      // Given a record
       const record = new AirtableRecord(recordDict);
-      record._updatedFields = { Title: 'Updated Title' };
+      // When set fields
+      record.setFields({ Title: 'Updated Title' });
+      // Then updated fields should be returned
       expect(record.updatedFields).to.deep.equal({
         id: 'rec123',
         fields: { Title: 'Updated Title' },
@@ -185,64 +188,10 @@ describe('AirtableRecord', () => {
       };
       const record = new AirtableRecord(recordDict);
       record.setFields({ Title: 'Updated Title', 'Issue Number': '124' });
-      expect(record._updatedFields).to.deep.equal({
+      expect(record.updatedFields.fields).to.deep.equal({
         Title: 'Updated Title',
         'Issue Number': '124',
       });
-    });
-  });
-
-  describe('_setField', () => {
-    it('should set the field correctly', () => {
-      const recordDict = {
-        id: 'rec123',
-        fields: {
-          Title: 'Test Title',
-        },
-      };
-      const record = new AirtableRecord(recordDict);
-      record._setField('Title', 'Updated Title');
-      expect(record._updatedFields).to.deep.equal({
-        Title: 'Updated Title',
-      });
-    });
-  });
-
-  describe('_stringify', () => {
-    it('should format the field correctly', () => {
-      const testCases = [
-        {
-          name: 'date',
-          value: new Date('2021-01-01'),
-          expected: '2021-01-01',
-        },
-        {
-          name: 'number',
-          value: 123,
-          expected: '123',
-        },
-        {
-          name: 'string',
-          value: 'my text',
-          expected: 'my text',
-        },
-        {
-          name: 'undefined',
-          value: undefined,
-          expected: 'undefined',
-        },
-        {
-          name: 'null',
-          value: null,
-          expected: 'null',
-        },
-      ];
-      for (const testCase of testCases) {
-        expect(AirtableRecord._stringify(testCase.value)).to.equal(
-          testCase.expected,
-          `'${testCase.name}': Expected ${testCase.value} to format as ${testCase.expected}`
-        );
-      }
     });
   });
 });

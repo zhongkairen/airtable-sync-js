@@ -1,0 +1,390 @@
+{
+  "_comment": "This is a sample JSON file ",
+  "request": {
+    "method": "GET",
+    "url": "https://api.airtable.com/v0/${baseId}/${tableName}?${options}",
+    "api": "airtable.read",
+    "params": {
+      "baseId": "app5c1A4u4zw1UbXN",
+      "tableName": "airtable-sync"
+    },
+    "options": {
+      "maxRecords": 10
+    }
+  },
+  "response": [
+    {
+      "id": "rec245MWhP0ZRCDJV",
+      "createdTime": "2024-10-15T20:21:02.000Z",
+      "fields": {
+        "Issue Number": 11,
+        "Priority": "P0",
+        "Id": "2586968349",
+        "Issue Link": "https://github.com/zhongkairen/airtable-sync/issues/11",
+        "State": "closed",
+        "Updated At": "2024-10-16T21:08:07Z",
+        "Created At": "2024-10-14T20:23:01Z",
+        "Closed At": "2024-10-16T21:08:07Z",
+        "Body": "# To do\n- [x] Text\n- [x] Single selection - Priority\n- [x] Number\n",
+        "Start Date": "2024-10-16",
+        "Alias": "FTY-011",
+        "Start Count": 3,
+        "Title": "Add support for more field types",
+        "Labels": ["airtable"],
+        "Delivery Date": "2024-10-16",
+        "Created By": "zhongkairen",
+        "Comment Count": 1,
+        "Open in Github": {
+          "label": "Open in Github",
+          "url": "https://github.com/zhongkairen/airtable-sync/issues/11"
+        },
+        "Sync Source": "zhongkairen/airtable-sync"
+      }
+    },
+    {
+      "id": "rec7Hoj1ZTGkjTOaj",
+      "createdTime": "2024-10-15T20:21:02.000Z",
+      "fields": {
+        "Issue Number": 10,
+        "Priority": "P1",
+        "Id": "2586961935",
+        "Issue Link": "https://github.com/zhongkairen/airtable-sync/issues/10",
+        "State": "closed",
+        "Updated At": "2024-10-16T14:47:43Z",
+        "Created At": "2024-10-14T20:20:22Z",
+        "Closed At": "2024-10-16T14:47:43Z",
+        "Body": "# Task list\n- [x] #13\n- [x] Create GitHub issues and project fields\n- [x] Create separate tokens for Airtable\n- [x] Create separate token for GitHub\n- [x] #14\n",
+        "Start Date": "2024-10-14",
+        "Alias": "SAN-011",
+        "Start Count": 7,
+        "Title": "Use different sandbox to test sync",
+        "Labels": ["airtable"],
+        "Delivery Date": "2024-10-20",
+        "Created By": "zhongkairen",
+        "Comment Count": 4,
+        "Open in Github": {
+          "label": "Open in Github",
+          "url": "https://github.com/zhongkairen/airtable-sync/issues/10"
+        },
+        "Sync Source": "zhongkairen/airtable-sync"
+      }
+    },
+    {
+      "id": "rec9fZ7vgIORHGYeD",
+      "createdTime": "2024-10-26T14:34:10.000Z",
+      "fields": {
+        "Issue Number": 39,
+        "Priority": "P0",
+        "Id": "2604532873",
+        "Issue Link": "https://github.com/zhongkairen/airtable-sync/issues/39",
+        "State": "closed",
+        "Updated At": "2024-10-26T12:54:09Z",
+        "Created At": "2024-10-22T07:30:04Z",
+        "Closed At": "2024-10-26T12:54:09Z",
+        "Body": "A dry run test bed for tokens, to help with token renewal and first time setup.\nInstead of breaking production sync, testing the accesses before taking the tokens into use is a safe approach.\nThe tool can be run locally and a workflow will ensure the secrets are actually set up properly in the repo.\n",
+        "Start Date": "2024-10-24",
+        "Alias": "TOK-390",
+        "Title": "Separate workflow to verify tokens",
+        "Labels": ["airtable"],
+        "Delivery Date": "2024-10-25",
+        "Created By": "zhongkairen",
+        "Comment Count": 4,
+        "Open in Github": {
+          "label": "Open in Github",
+          "url": "https://github.com/zhongkairen/airtable-sync/issues/39"
+        },
+        "Sync Source": "zhongkairen/airtable-sync"
+      }
+    },
+    {
+      "id": "recBz1mxiIk8kSOEF",
+      "createdTime": "2024-10-16T19:56:37.000Z",
+      "fields": {
+        "Issue Number": 21,
+        "Priority": "P1",
+        "Id": "2592897686",
+        "Issue Link": "https://github.com/zhongkairen/airtable-sync/issues/21",
+        "State": "open",
+        "Updated At": "2024-10-29T16:12:14Z",
+        "Created At": "2024-10-16T19:45:43Z",
+        "Body": "- [x] Clean up any dead code, unused variables.\n- [x] Add function documentation.\n- [x] Remove hacks.\n- [ ] Check for undocumented behaviors.\n",
+        "Start Date": "2024-10-25",
+        "Alias": "CLN-021",
+        "Start Count": -3.14,
+        "Title": "Clean up",
+        "Labels": ["airtable"],
+        "Created By": "zhongkairen",
+        "Comment Count": 2,
+        "Open in Github": {
+          "label": "Open in Github",
+          "url": "https://github.com/zhongkairen/airtable-sync/issues/21"
+        },
+        "Sync Source": "zhongkairen/airtable-sync"
+      }
+    },
+    {
+      "id": "recHmSoFAf2JDdLyo",
+      "createdTime": "2024-10-15T20:21:02.000Z",
+      "fields": {
+        "Issue Number": 7,
+        "Priority": "P0",
+        "Id": "2584967386",
+        "Issue Link": "https://github.com/zhongkairen/airtable-sync/issues/7",
+        "State": "closed",
+        "Updated At": "2024-10-15T19:43:28Z",
+        "Created At": "2024-10-14T06:51:05Z",
+        "Closed At": "2024-10-15T08:39:23Z",
+        "Body": "Scheduled run should always use the latest package.\nChange triggered runs should verify the functionality in the branch and therefore run using the latest source in the branch.\n\n\n- [x] #15\n",
+        "Start Date": "2024-10-13",
+        "Alias": "BRS-007",
+        "Start Count": 3,
+        "Title": "Use separate workflows for scheduled run and change triggered run",
+        "Labels": ["airtable"],
+        "Delivery Date": "2024-10-15",
+        "Created By": "zhongkairen",
+        "Comment Count": 1,
+        "Open in Github": {
+          "label": "Open in Github",
+          "url": "https://github.com/zhongkairen/airtable-sync/issues/7"
+        },
+        "Sync Source": "zhongkairen/airtable-sync"
+      }
+    },
+    {
+      "id": "recIqviY2pXsEL1o7",
+      "createdTime": "2024-10-25T07:26:55.000Z",
+      "fields": {
+        "Issue Number": 38,
+        "Priority": "P0",
+        "Id": "2604523738",
+        "Issue Link": "https://github.com/zhongkairen/airtable-sync/issues/38",
+        "State": "closed",
+        "Updated At": "2024-10-25T07:26:18Z",
+        "Created At": "2024-10-22T07:25:48Z",
+        "Closed At": "2024-10-25T07:25:55Z",
+        "Body": "The instruction of how to set up PAT should be updated to use fine grained token instead of classic.\nAlso organization, repo and accesses need to be clarified in the token scope section. Otherwise the workflow will fail without giving much helpful information how to fix the token.\n",
+        "Start Date": "2024-10-24",
+        "Alias": "TOK-380",
+        "Title": "GitHub token documentation",
+        "Labels": ["airtable"],
+        "Delivery Date": "2024-10-24",
+        "Created By": "zhongkairen",
+        "Comment Count": 0,
+        "Open in Github": {
+          "label": "Open in Github",
+          "url": "https://github.com/zhongkairen/airtable-sync/issues/38"
+        },
+        "Sync Source": "zhongkairen/airtable-sync"
+      }
+    },
+    {
+      "id": "recROVlDDwyLVFmlR",
+      "createdTime": "2024-11-07T14:20:55.000Z",
+      "fields": {
+        "Issue Number": 55,
+        "Priority": "P3",
+        "Id": "2641163934",
+        "Issue Link": "https://github.com/zhongkairen/airtable-sync/issues/55",
+        "State": "open",
+        "Updated At": "2024-11-07T14:19:30Z",
+        "Created At": "2024-11-07T14:18:10Z",
+        "Body": "\n",
+        "Start Date": "2024-10-31",
+        "Alias": "ttt-000",
+        "Start Count": 0,
+        "Title": "[test] RECORD2",
+        "Labels": ["airtable"],
+        "Delivery Date": "2024-11-12",
+        "Created By": "zhongkairen",
+        "Comment Count": 0,
+        "Open in Github": {
+          "label": "Open in Github",
+          "url": "https://github.com/zhongkairen/airtable-sync/issues/55"
+        },
+        "Sync Source": "zhongkairen/airtable-sync"
+      }
+    },
+    {
+      "id": "recYj9SUUeaZBB7sS",
+      "createdTime": "2024-10-15T20:21:02.000Z",
+      "fields": {
+        "Issue Number": 9,
+        "Priority": "P1",
+        "Id": "2586948944",
+        "Issue Link": "https://github.com/zhongkairen/airtable-sync/issues/9",
+        "State": "closed",
+        "Updated At": "2024-10-18T19:56:52Z",
+        "Created At": "2024-10-14T20:13:59Z",
+        "Closed At": "2024-10-18T19:56:52Z",
+        "Body": "Support\n- [x] Add unit test workflow\n- [x] post test result \n- [x] Command palette for running test\n- [x] Coverage config\n- [x] Update coverage doc\n- [x] Add test coverage workflow\n- [x] Run test coverage badge update only for main branch\n- [x] Command palette in tasks.json\n\nCoverage\n- [x] airtable client\n- [x] airtable update\\_result\n- [x] github client\n- [x] github issue\n\nCode changes\n- [x] Fix table_fields_    ✔ should read all records schema and field_in_schema in AirtableClient\n- [x] Refactor issue read\n",
+        "Start Date": "2024-10-09",
+        "Alias": "COV-010",
+        "Start Count": 2,
+        "Title": "Improve test coverage",
+        "Labels": ["airtable"],
+        "Delivery Date": "2024-10-30",
+        "Created By": "zhongkairen",
+        "Comment Count": 1,
+        "Open in Github": {
+          "label": "Open in Github",
+          "url": "https://github.com/zhongkairen/airtable-sync/issues/9"
+        },
+        "Sync Source": "zhongkairen/airtable-sync"
+      }
+    },
+    {
+      "id": "recjg8Vsnzga1Akjk",
+      "createdTime": "2024-10-20T15:47:23.000Z",
+      "fields": {
+        "Issue Number": 19,
+        "Priority": "P1",
+        "Id": "2592896086",
+        "Issue Link": "https://github.com/zhongkairen/airtable-sync/issues/19",
+        "State": "closed",
+        "Updated At": "2024-10-20T12:34:42Z",
+        "Created At": "2024-10-16T19:45:26Z",
+        "Closed At": "2024-10-19T14:36:29Z",
+        "Body": "Support checking a list of historical runs.\nTwo stamps, start and finish.\nRun result, failure/success.\nCreate configuration Gist. How to check file signature?\nInclude version number or git commit hash.\n",
+        "Start Date": "2024-10-17",
+        "Alias": "SIH-019",
+        "Start Count": 34,
+        "Title": "Create sync history",
+        "Labels": ["airtable"],
+        "Delivery Date": "2024-10-18",
+        "Created By": "zhongkairen",
+        "Comment Count": 6,
+        "Open in Github": {
+          "label": "Open in Github",
+          "url": "https://github.com/zhongkairen/airtable-sync/issues/19"
+        },
+        "Sync Source": "zhongkairen/airtable-sync"
+      }
+    },
+    {
+      "id": "recjz8PFKFI5XevAA",
+      "createdTime": "2024-10-15T20:21:02.000Z",
+      "fields": {
+        "Issue Number": 12,
+        "Priority": "P3",
+        "Id": "2587033238",
+        "Issue Link": "https://github.com/zhongkairen/airtable-sync/issues/12",
+        "State": "open",
+        "Updated At": "2024-10-14T20:51:05Z",
+        "Created At": "2024-10-14T20:45:29Z",
+        "Body": "TLDR GitHub will have a built-in issue-type, allowing sub-issues.\nEpic as a custom issue type will no longer be an issue grouping solution for represent an initiative/project.\nhttps://github.blog/changelog/2024-10-01-evolving-github-issues-public-beta/#increased-items-in-github-projects\n",
+        "Alias": "SBI-012",
+        "Start Count": 1.2,
+        "Title": "Check out sub-issues public beta",
+        "Labels": ["airtable"],
+        "Created By": "zhongkairen",
+        "Comment Count": 0,
+        "Open in Github": {
+          "label": "Open in Github",
+          "url": "https://github.com/zhongkairen/airtable-sync/issues/12"
+        },
+        "Sync Source": "zhongkairen/airtable-sync"
+      }
+    },
+    {
+      "id": "reclAzJuEJ7BWw2cm",
+      "createdTime": "2024-11-06T21:34:06.000Z",
+      "fields": {
+        "Issue Number": 54,
+        "Priority": "P3",
+        "Id": "2639254409",
+        "Issue Link": "https://github.com/zhongkairen/airtable-sync/issues/54",
+        "State": "open",
+        "Updated At": "2024-11-06T21:33:54Z",
+        "Created At": "2024-11-06T21:20:18Z",
+        "Body": "Test record for e2e testing.\n",
+        "Start Date": "2024-10-31",
+        "Alias": "TST-000",
+        "Start Count": 2,
+        "Title": "[test] RECORD",
+        "Labels": ["airtable"],
+        "Delivery Date": "2024-11-07",
+        "Created By": "zhongkairen",
+        "Comment Count": 0,
+        "Open in Github": {
+          "label": "Open in Github",
+          "url": "https://github.com/zhongkairen/airtable-sync/issues/54"
+        },
+        "Sync Source": "zhongkairen/airtable-sync"
+      }
+    },
+    {
+      "id": "reclJ4zvNTOraM2Nl",
+      "createdTime": "2024-10-26T20:29:58.000Z",
+      "fields": {
+        "Issue Number": 29,
+        "Priority": "P1",
+        "Id": "2598293334",
+        "Issue Link": "https://github.com/zhongkairen/airtable-sync/issues/29",
+        "State": "closed",
+        "Updated At": "2024-10-26T14:39:43Z",
+        "Created At": "2024-10-18T19:58:43Z",
+        "Closed At": "2024-10-20T12:33:47Z",
+        "Body": "\n",
+        "Start Date": "2024-10-19",
+        "Alias": "LIN-029",
+        "Title": "Add linting workflow",
+        "Labels": ["airtable"],
+        "Delivery Date": "2024-10-19",
+        "Created By": "zhongkairen",
+        "Comment Count": 1,
+        "Open in Github": {
+          "label": "Open in Github",
+          "url": "https://github.com/zhongkairen/airtable-sync/issues/29"
+        },
+        "Sync Source": "zhongkairen/airtable-sync"
+      }
+    },
+    {
+      "id": "reclYqJ9fxBIOHrC9",
+      "createdTime": "2024-10-26T14:34:10.000Z",
+      "fields": {
+        "Issue Number": 22,
+        "Priority": "P3",
+        "Id": "2593050468",
+        "Issue Link": "https://github.com/zhongkairen/airtable-sync/issues/22",
+        "State": "open",
+        "Updated At": "2024-10-26T12:55:45Z",
+        "Created At": "2024-10-16T21:00:10Z",
+        "Body": "\n",
+        "Title": "Add support for iteration field type",
+        "Labels": ["airtable"],
+        "Created By": "zhongkairen",
+        "Comment Count": 0,
+        "Open in Github": {
+          "label": "Open in Github",
+          "url": "https://github.com/zhongkairen/airtable-sync/issues/22"
+        },
+        "Sync Source": "zhongkairen/airtable-sync"
+      }
+    },
+    {
+      "id": "recqmPHqLAJ1axbpe",
+      "createdTime": "2024-10-16T19:56:37.000Z",
+      "fields": {
+        "Issue Number": 18,
+        "Priority": "P2",
+        "Id": "2592895499",
+        "Issue Link": "https://github.com/zhongkairen/airtable-sync/issues/18",
+        "State": "open",
+        "Updated At": "2024-10-16T21:18:26Z",
+        "Created At": "2024-10-16T19:45:07Z",
+        "Body": "A new option to do dry run.\nThe run shouldn't change any values.\nIt shouldn't trigger any status badge update.\nAll the other functionality should be performed, including all network requests.\nThe dry run should be used in a new workflow, using production configuration.\nThe idea is to have consistent result as the regular production sync, as if the changes were released.\nThis should be used as a quality gate, i.e. issues in the functionality should fail the workflow, except the failure is not reported to the badge.\nThe latest source should be used. i.e. not by installing a stable package.\n",
+        "Start Count": 67,
+        "Title": "Add production dry run",
+        "Labels": ["airtable"],
+        "Created By": "zhongkairen",
+        "Comment Count": 0,
+        "Open in Github": {
+          "label": "Open in Github",
+          "url": "https://github.com/zhongkairen/airtable-sync/issues/18"
+        },
+        "Sync Source": "zhongkairen/airtable-sync"
+      }
+    }
+  ]
+}

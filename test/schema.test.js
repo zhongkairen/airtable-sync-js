@@ -20,7 +20,7 @@ describe('AirtableSchema', () => {
       viewName: 'fakeViewName',
     });
     fetchStub = sinon.stub();
-    uut._fetch = fetchStub;
+    uut.fetchMock = fetchStub;
   });
 
   describe('fetchSchema', () => {

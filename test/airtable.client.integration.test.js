@@ -133,8 +133,6 @@ describe('AirtableClient - Integration Test', () => {
         };
       });
 
-      console.log('oldRecords', JSON.stringify(oldRecords, null, 2));
-
       // Number of records to update is capped by the available test records (at least 2)
       const recordsToUpdate = testRecords.map((record, i) => {
         const updatedRecord = { ...recordValues[i % recordValues.length], id: record.id };
@@ -142,12 +140,8 @@ describe('AirtableClient - Integration Test', () => {
         return updatedRecord;
       });
 
-      console.log('records to update: ', JSON.stringify(recordsToUpdate, null, 2));
-
       // When multiple records are updated
       const updateResult = await uut.batchUpdate(recordsToUpdate);
-
-      // console.log('updateResult failed:', JSON.stringify(updateResult.failed, null, 2));
 
       // Then the update result should be successful
       expect(updateResult).to.exist;
