@@ -1,41 +1,45 @@
 import { GraphQLClient } from 'graphql-request'; // Use GraphQLClient from graphql-request
-import gql from 'graphql-tag';
-import { fileURLToPath } from 'url';
-import { readFileSync as defaultReadFileSync } from 'fs';
-import { getPath, PathName } from '../path-util.js';
-
-const uri = 'https://api.github.com/graphql';
+import { loadGql } from './graphql-loader.js';
 
 class GitHubGqlClient {
-  constructor(token, readFileSync = defaultReadFileSync) {
-    this._gqlClient = new GraphQLClient(uri, {
+  /**
+   * Initializes the GitHub GraphQL client with the given token.
+   * @param {string} token - The GitHub token to use for authentication.
+   */
+  constructor(token) {
+    const uri = 'https://api.github.com/graphql';
+    this.#gqlClient = new GraphQLClient(uri, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     });
-    this._readFileSync = readFileSync;
-    this._queryCache = {};
+    this.#queryCache = {};
   }
 
-  _loadQuery(queryName) {
-    const queryString = this._readFileSync(
-      getPath(PathName.GRAPHQL, `${queryName}.graphql`),
-      'utf8'
-    );
-    return gql`
-      ${queryString}
-    `;
-  }
+  /** @type {GraphQLClient} */
+  #gqlClient;
 
-  _getQuery(queryName) {
-    this._queryCache[queryName] ??= this._loadQuery(queryName);
-    return this._queryCache[queryName];
-  }
+  /** @type {object} */
+  #queryCache;
 
+  /**
+   * Make a GraphQL request to GitHub using the given query and variables.
+   * @param {string} queryName
+   * @param {object} variables
+   * @returns {Promise<object>} - The response data from the GraphQL request.
+   */
   async query(queryName, variables) {
-    const gqlQuery = this._getQuery(queryName);
-    const data = await this._gqlClient.request(gqlQuery, variables); // Send request using graphql-request
-    return data;
+    const gqlQuery = this.#getQuery(queryName);
+    return await this.#gqlClient.request(gqlQuery, variables); // Send request using graphql-request
+  }
+
+  /**
+   * Get the query from the cache or load it from the file system
+   * @param {string} queryName
+   * @returns {graphql.DocumentNode}
+   */
+  #getQuery(queryName) {
+    return (this.#queryCache[queryName] ??= loadGql(queryName));
   }
 }
 

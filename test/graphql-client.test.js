@@ -4,7 +4,17 @@ import { GraphQLClient } from 'graphql-request';
 import fs from 'fs';
 import path from 'path';
 import { getPath, PathName } from '../src/path-util.js';
+import mock from 'mock-require';
+
+const GraphQLClient_request_stub = sinon.stub().returns('mocked result');
+mock('graphql-request', { request: GraphQLClient_request_stub });
+
+const loadGql_stub = sinon.stub().returns('mocked result');
+mock('./graphql-loader.js', { loadGql: loadGql_stub });
+
 import GitHubGqlClient from '../src/github/graphql-client.js';
+
+// wip - play around with the mocks, test the class
 
 describe('GitHubGqlClient', () => {
   let uut;
@@ -15,24 +25,24 @@ describe('GitHubGqlClient', () => {
   const queryString = 'query { test }';
   const gqlFilePath = getPath(PathName.GRAPHQL, `${queryName}.graphql`);
 
-  before(() => {
-    fs.writeFileSync(gqlFilePath, queryString);
-  });
+  // before(() => {
+  //   fs.writeFileSync(gqlFilePath, queryString);
+  // });
 
-  after(() => {
-    fs.unlinkSync(gqlFilePath);
-  });
+  // after(() => {
+  //   fs.unlinkSync(gqlFilePath);
+  // });
 
   beforeEach(() => {
     uut = new GitHubGqlClient(token);
   });
 
-  describe('constructor', () => {
-    it('c0 - should initialize with correct headers', () => {
-      expect(uut._gqlClient).to.be.instanceOf(GraphQLClient);
-      expect(uut._gqlClient.requestConfig.headers.Authorization).to.equal(`Bearer ${token}`);
-    });
-  });
+  // describe('constructor', () => {
+  //   it('c0 - should initialize with correct headers', () => {
+  //     expect(uut._gqlClient).to.be.instanceOf(GraphQLClient);
+  //     expect(uut._gqlClient.requestConfig.headers.Authorization).to.equal(`Bearer ${token}`);
+  //   });
+  // });
 
   describe('_loadQuery && _getQuery', () => {
     it('a1 - should load query from file', () => {

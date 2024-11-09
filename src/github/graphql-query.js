@@ -1,8 +1,7 @@
 import GitHubGqlClient from './graphql-client.js';
 
+/** Class that constructs GraphQL queries for fetching data from a GitHub repository. */
 export class GitHubGqlQuery {
-  /** Class that constructs GraphQL queries for fetching data from a GitHub repository. */
-
   /**
    * Initializes the GitHub GraphQL query client with the given configuration.
    * @param {object} githubConfig - GitHub configuration object

@@ -44,6 +44,19 @@ class GitHubIssue {
     this.fields = {};
   }
 
+  get isEpic() {
+    const issueType = this.fields['issue_type'] || '';
+    const cleanedIssueType = issueType.replace(/[^a-zA-Z0-9 ]/g, '').trim();
+    return cleanedIssueType === 'Epic';
+  }
+
+  get issueNumber() {
+    if (this.number != null) return this.number;
+
+    const match = (this.url ??= '').match(/\/issues\/(\d+)/);
+    return match ? parseInt(match[1], 10) : null;
+  }
+
   loadFields(baseData, fields) {
     const fieldValues = fields.fieldValues.nodes;
     this.url = baseData.url || this.url;
@@ -70,12 +83,6 @@ class GitHubIssue {
 
     const indent = '  ';
     return lines.map((line) => `${indent}${line}`).join('\n');
-  }
-
-  get isEpic() {
-    const issueType = this.fields['issue_type'] || '';
-    const cleanedIssueType = issueType.replace(/[^a-zA-Z0-9 ]/g, '').trim();
-    return cleanedIssueType === 'Epic';
   }
 
   handleFieldValues(fieldValues) {
@@ -121,13 +128,6 @@ class GitHubIssue {
     } else {
       this.fields[name] = GitHubIssue.mapFieldValue(fieldType, value);
     }
-  }
-
-  get issueNumber() {
-    if (this.number != null) return this.number;
-
-    const match = (this.url ??= '').match(/\/issues\/(\d+)/);
-    return match ? parseInt(match[1], 10) : null;
   }
 }
 

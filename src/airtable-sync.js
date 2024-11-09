@@ -61,6 +61,10 @@ export class AirtableSync {
     return this.#fieldMap;
   }
 
+  get client() {
+    return this.#airtableClient;
+  }
+
   async #prepSync() {
     await this.#airtableClient.init();
 
@@ -132,9 +136,5 @@ export class AirtableSync {
         updatedFields[airtableField] = issue.fields[githubField];
       return updatedFields;
     }, {});
-  }
-
-  get client() {
-    return this.#airtableClient;
   }
 }
