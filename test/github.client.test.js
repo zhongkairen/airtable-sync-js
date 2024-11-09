@@ -24,7 +24,7 @@ describe('GitHubClient', () => {
     queryMock = sinon.createStubInstance(GitHubGqlQuery);
     loggerMock = sinon.createStubInstance(CustomLogger);
     uut = new GitHubClient(githubConfig);
-    uut.query = queryMock;
+    uut.mockQuery = queryMock;
     uut.logger = loggerMock;
   });
 

@@ -90,10 +90,6 @@ class AirtableRecord {
     return this.#fields;
   }
 
-  getField(fieldName) {
-    return this.fields[fieldName];
-  }
-
   /**
    * Repository name extracted from the issue link.
    * @readonly
@@ -128,7 +124,12 @@ class AirtableRecord {
     return this.#fields[fieldName] === value;
   }
 
-  /// todo: might need refactoring, Airtable API update method return value could be different
+  /**
+   * Commit the changes to the record, after an update request.
+   * @param {object} updatedRecord - The updated record object from the response of the update request.
+   *    it contains the ID and fields of the updated record.
+   * @returns {object} - Tuple of the `changes` made and `error` message.
+   */
   commitChanges(updatedRecord) {
     // Commit changes to the record by comparing the provided updated fields with the current fields.
     let error = null;

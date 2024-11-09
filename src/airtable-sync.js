@@ -39,8 +39,6 @@ export class AirtableSync {
     );
 
     for (const record of this.#airtableClient.recordsInCurrentRepo) {
-      // todo: can we get it from cache?
-      // const issue = await this.#getIssue(record);
       const issue = this.github.epicIssues.find((issue) => issue.number === record.issueNumber);
       if (!issue) {
         logger.warn(`Issue ${record.issueNumber} not found in GitHub.`);
