@@ -14,9 +14,17 @@ class CustomLogger {
 
   static instances = [];
 
+  /**
+   * Set the global log level for all loggers.
+   * Verbosity order: debug > verbose > info > warn > error > silent
+   * @param {string} logLevel - possible values: 'debug', 'verbose', 'info', 'warn', 'error', 'silent'
+   */
   static setLogLevel(logLevel) {
     CustomLogger.globalLogLevel = logLevel;
-    CustomLogger.instances.forEach((instance) => instance.updateSilentMode());
+    CustomLogger.instances.forEach((instance) => {
+      instance.logger.level = logLevel;
+      instance.updateSilentMode();
+    });
   }
 
   constructor(filePath) {
