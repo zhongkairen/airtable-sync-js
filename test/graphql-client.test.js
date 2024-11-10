@@ -1,76 +1,55 @@
 import { expect } from 'chai';
 import sinon from 'sinon';
-import { GraphQLClient } from 'graphql-request';
-import fs from 'fs';
-import path from 'path';
-import { getPath, PathName } from '../src/path-util.js';
-import mock from 'mock-require';
-
-const GraphQLClient_request_stub = sinon.stub().returns('mocked result');
-mock('graphql-request', { request: GraphQLClient_request_stub });
-
-const loadGql_stub = sinon.stub().returns('mocked result');
-mock('./graphql-loader.js', { loadGql: loadGql_stub });
-
 import GitHubGqlClient from '../src/github/graphql-client.js';
-
-// wip - play around with the mocks, test the class
+import { GraphQLClient } from 'graphql-request';
 
 describe('GitHubGqlClient', () => {
-  let uut;
-  const token = 'test-token';
-  const queryName = '$$test-query';
-  const variables = { test: 'variable' };
-  const queryResult = { data: 'test' };
-  const queryString = 'query { test }';
-  const gqlFilePath = getPath(PathName.GRAPHQL, `${queryName}.graphql`);
+  let token;
+  let mock;
+  let client;
 
-  // before(() => {
-  //   fs.writeFileSync(gqlFilePath, queryString);
-  // });
-
-  // after(() => {
-  //   fs.unlinkSync(gqlFilePath);
-  // });
+  before(() => {
+    process.env.NODE_ENV = 'test';
+  });
 
   beforeEach(() => {
-    uut = new GitHubGqlClient(token);
+    token = 'test-token';
+    mock = {
+      loadGql: sinon.stub(),
+      gqlClient: sinon.createStubInstance(GraphQLClient),
+    };
+    client = new GitHubGqlClient(token, mock);
   });
 
-  // describe('constructor', () => {
-  //   it('c0 - should initialize with correct headers', () => {
-  //     expect(uut._gqlClient).to.be.instanceOf(GraphQLClient);
-  //     expect(uut._gqlClient.requestConfig.headers.Authorization).to.equal(`Bearer ${token}`);
-  //   });
-  // });
+  it('should make a GraphQL request with the given query and variables', async () => {
+    const queryName = 'testQuery';
+    const variables = { test: 'variable' };
+    const gqlQuery = 'query { test }';
+    const response = { data: 'testData' };
 
-  describe('_loadQuery && _getQuery', () => {
-    it('a1 - should load query from file', () => {
-      const readFileSyncStub = sinon.stub().returns(queryString);
+    mock.loadGql.withArgs(queryName).returns(gqlQuery);
+    mock.gqlClient.request.withArgs(gqlQuery, variables).resolves(response);
 
-      const uut = new GitHubGqlClient(token, readFileSyncStub);
-      const gqlQuery = uut._loadQuery(queryName);
-      expect(readFileSyncStub.calledOnceWith(gqlFilePath)).to.be.true;
-      expect(gqlQuery.loc.source.body.trim()).to.equal(queryString);
-    });
+    const result = await client.query(queryName, variables);
 
-    it('a2 - should cache loaded queries', () => {
-      const loadQueryStub = sinon.stub(uut, '_loadQuery').returns(queryString);
-      const firstCall = uut._getQuery(queryName);
-      const secondCall = uut._getQuery(queryName);
-      expect(loadQueryStub.calledOnce).to.be.true;
-      expect(firstCall).to.equal(secondCall);
-      loadQueryStub.restore();
-    });
+    expect(result).to.equal(response);
+    expect(mock.loadGql.calledOnceWith(queryName)).to.be.true;
+    expect(mock.gqlClient.request.calledOnceWith(gqlQuery, variables)).to.be.true;
   });
 
-  describe('query', () => {
-    it('b1 - should send a query request and return data', async () => {
-      const requestStub = sinon.stub(uut._gqlClient, 'request').resolves(queryResult);
-      const result = await uut.query(queryName, variables);
-      expect(requestStub.calledOnceWith(sinon.match.any, variables)).to.be.true;
-      expect(result).to.equal(queryResult);
-      requestStub.restore();
-    });
+  it('should cache the loaded query', async () => {
+    const queryName = 'testQuery';
+    const variables = { test: 'variable' };
+    const gqlQuery = 'query { test }';
+    const response = { data: 'testData' };
+
+    mock.loadGql.withArgs(queryName).returns(gqlQuery);
+    mock.gqlClient.request.withArgs(gqlQuery, variables).resolves(response);
+
+    await client.query(queryName, variables);
+    await client.query(queryName, variables);
+
+    expect(mock.loadGql.calledOnceWith(queryName)).to.be.true;
+    expect(mock.gqlClient.request.calledTwice).to.be.true;
   });
 });

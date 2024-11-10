@@ -1,84 +1,88 @@
 import { expect } from 'chai';
+import sinon from 'sinon';
 import { AirtableConfig } from '../src/config.js';
 import fs from 'fs';
 import path from 'path';
 import os from 'os';
 
 describe('AirtableConfig', () => {
-  describe('constructor', () => {
-    const testVars = {
-      tokenFile: '.pseudo-token',
-      tokenPath: '/config/path',
-      expectedToken: '',
-    };
-    before(() => {
-      // Setup code before the test suite runs
-      const homeDir = os.homedir();
-      const scriptDir = path.dirname(new URL(import.meta.url).pathname);
-      const sourcePath = path.join(scriptDir, testVars.tokenFile);
-      testVars.tokenPath = path.join(homeDir, testVars.tokenFile);
-      fs.copyFileSync(sourcePath, testVars.tokenPath);
+  let mock;
+  let uut;
 
-      fs.readFile(testVars.tokenPath, 'utf8', (err, data) => {
-        if (err) {
-          throw err;
-        }
-        testVars.expectedToken = data;
-      });
-    });
+  before(() => {
+    process.env.NODE_ENV = 'test';
+  });
 
-    after(() => {
-      fs.unlinkSync(testVars.tokenPath);
-    });
+  beforeEach(() => {
+    process.env.NODE_ENV = 'test';
 
-    afterEach(() => {
-      delete process.env.AIRTABLE_TOKEN;
-      delete process.env.AIRTABLE_TOKEN_PATH;
-    });
-
-    it('c0 - should initialize with token from environment variable', () => {
-      process.env.AIRTABLE_TOKEN = 'test-token-value';
-      const configJson = {};
-      const airtableConfig = new AirtableConfig(configJson);
-      expect(airtableConfig.token).to.equal('test-token-value');
-    });
-
-    it('c1 - should initialize token with token path from environment variable', () => {
-      const { tokenPath } = testVars;
-      process.env.AIRTABLE_TOKEN_PATH = tokenPath;
-      const configJson = {};
-      const airtableConfig = new AirtableConfig(configJson);
-      expect(airtableConfig.token).to.equal(testVars.expectedToken);
-    });
-
-    it('c2 - should initialize with token from configJson', () => {
-      const configJson = { token: 'config-token-value' };
-      const airtableConfig = new AirtableConfig(configJson);
-      expect(airtableConfig.token).to.equal('config-token-value');
-    });
-
-    it('c3 - should initialize token with token path from configJson', () => {
-      const { tokenPath } = testVars;
-      const configJson = { tokenPath: tokenPath };
-      const airtableConfig = new AirtableConfig(configJson);
-      expect(airtableConfig.token).to.equal(testVars.expectedToken);
-    });
-
-    it('c4 - should initialize with other configuration values from configJson', () => {
-      process.env.AIRTABLE_TOKEN_PATH = testVars.tokenPath;
-      const configJson = {
-        baseId: 'test-base-id',
-        tableName: 'test-table-name',
-        viewName: 'test-view-name',
+    const mockUserToken = sinon.stub().callsFake((nameDict, configJson) => {
+      const mockInstance = {
+        token: configJson.token, // Simulate the token set in the constructor
+        tokenPath: configJson.tokenPath,
+        // Mock the read method and define the value getter
+        read: sinon.stub().returnsThis(),
+        get value() {
+          return 'test-token-value'; // Return mocked value when 'value' is accessed
+        },
       };
-      const airtableConfig = new AirtableConfig(configJson);
-      expect(airtableConfig.baseId).to.equal('test-base-id');
-      expect(airtableConfig.tableName).to.equal('test-table-name');
-      expect(airtableConfig.viewName).to.equal('test-view-name');
+
+      return mockInstance;
     });
 
-    it('c5 - should throw an error if neither token nor token path is set', () => {
-      expect(() => new AirtableConfig({})).to.throw(Error);
+    mock = {
+      UserToken: mockUserToken,
+    };
+  });
+
+  after(() => {
+    process.env.NODE_ENV = undefined;
+  });
+
+  afterEach(() => {
+    sinon.restore();
+  });
+
+  describe('constructor', () => {
+    it('should pass correct values to user token', () => {
+      const configJson = {
+        field1: 'value1',
+      };
+      const airtableConfig = new AirtableConfig(configJson, mock);
+
+      const args = mock.UserToken.args[0];
+
+      // Validate the nameDict argument
+      expect(args[0]).to.have.property('token', 'AIRTABLE_TOKEN');
+      expect(args[0]).to.have.property('tokenPath', 'AIRTABLE_TOKEN_PATH');
+      expect(args[0]).to.include({
+        token: 'AIRTABLE_TOKEN',
+        tokenPath: 'AIRTABLE_TOKEN_PATH',
+        configToken: 'token',
+        configTokenPath: 'tokenPath',
+      });
+
+      // Validate the configJson argument
+      expect(args[1]).to.deep.equal(configJson);
+
+      // Validate fields are set to the instance
+      expect(airtableConfig).to.have.property('field1', 'value1');
+    });
+  });
+
+  describe('token', () => {
+    it('should return from user token value', () => {
+      mock.UserToken.returns({
+        read: sinon.stub().returns({
+          get value() {
+            return 'test-token-value-1';
+          },
+        }),
+      });
+
+      const configJson = {};
+      const airtableConfig = new AirtableConfig(configJson, mock);
+      expect(airtableConfig.token).to.equal('test-token-value-1');
     });
   });
 });

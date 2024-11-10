@@ -1,88 +1,88 @@
 import { expect } from 'chai';
+import sinon from 'sinon';
 import { GitHubConfig } from '../src/config.js';
 import fs from 'fs';
 import path from 'path';
 import os from 'os';
-// import { field } from 'graphql-request/alpha/schema';
 
 describe('GitHubConfig', () => {
-  describe('constructor', () => {
-    const testVars = {
-      tokenFile: '.pseudo-token',
-      tokenPath: '/config/path',
-      expectedToken: '',
-    };
-    before(() => {
-      // Setup code before the test suite runs
-      const homeDir = os.homedir();
-      const scriptDir = path.dirname(new URL(import.meta.url).pathname);
-      const sourcePath = path.join(scriptDir, testVars.tokenFile);
-      testVars.tokenPath = path.join(homeDir, testVars.tokenFile);
-      fs.copyFileSync(sourcePath, testVars.tokenPath);
+  let mock;
+  let uut;
 
-      fs.readFile(testVars.tokenPath, 'utf8', (err, data) => {
-        if (err) {
-          throw err;
-        }
-        testVars.expectedToken = data;
-      });
-    });
+  before(() => {
+    process.env.NODE_ENV = 'test';
+  });
 
-    after(() => {
-      // Cleanup code after the test suite runs
-      fs.unlinkSync(testVars.tokenPath);
-    });
+  beforeEach(() => {
+    process.env.NODE_ENV = 'test';
 
-    afterEach(() => {
-      delete process.env.GITHUB_TOKEN;
-      delete process.env.GITHUB_TOKEN_PATH;
-    });
-
-    it('should initialize with token from environment variable', () => {
-      process.env.GITHUB_TOKEN = 'test-token-value';
-      const configJson = {};
-      const githubConfig = new GitHubConfig(configJson);
-      expect(githubConfig.token).to.equal('test-token-value');
-    });
-
-    it('should initialize token with token path from environment variable', () => {
-      const { tokenPath } = testVars;
-      process.env.GITHUB_TOKEN_PATH = tokenPath;
-      const configJson = {};
-      const githubConfig = new GitHubConfig(configJson);
-      expect(githubConfig.token).to.equal(testVars.expectedToken);
-    });
-
-    it('should initialize with token from configJson', () => {
-      const configJson = { token: 'config-token-value' };
-      const githubConfig = new GitHubConfig(configJson);
-      expect(githubConfig.token).to.equal('config-token-value');
-    });
-
-    it('should initialize token with token path from configJson', () => {
-      const { tokenPath } = testVars;
-      const configJson = { tokenPath: tokenPath };
-      const githubConfig = new GitHubConfig(configJson);
-      expect(githubConfig.token).to.equal(testVars.expectedToken);
-    });
-
-    it('should initialize with other configuration values from configJson', () => {
-      process.env.GITHUB_TOKEN_PATH = testVars.tokenPath;
-      const configJson = {
-        projectName: 'test-project-name',
-        repoName: 'test-repo-name',
-        repoOwner: 'test-owner-name',
-        fieldMap: { 'test-field': 'test-value' },
+    const mockUserToken = sinon.stub().callsFake((nameDict, configJson) => {
+      const mockInstance = {
+        token: configJson.token, // Simulate the token set in the constructor
+        tokenPath: configJson.tokenPath,
+        // Mock the read method and define the value getter
+        read: sinon.stub().returnsThis(),
+        get value() {
+          return 'test-token-value'; // Return mocked value when 'value' is accessed
+        },
       };
-      const githubConfig = new GitHubConfig(configJson);
-      expect(githubConfig.projectName).to.equal('test-project-name');
-      expect(githubConfig.repoName).to.equal('test-repo-name');
-      expect(githubConfig.repoOwner).to.equal('test-owner-name');
-      expect(githubConfig.fieldMap).to.deep.equal({ 'test-field': 'test-value' });
+
+      return mockInstance;
     });
 
-    it('should throw an error if neither token nor token path is set', () => {
-      expect(() => new GitHubConfig({})).to.throw(Error);
+    mock = {
+      UserToken: mockUserToken,
+    };
+  });
+
+  after(() => {
+    process.env.NODE_ENV = undefined;
+  });
+
+  afterEach(() => {
+    sinon.restore();
+  });
+
+  describe('constructor', () => {
+    it('should pass correct values to user token', () => {
+      const configJson = {
+        field1: 'value1',
+      };
+      const githubConfig = new GitHubConfig(configJson, mock);
+
+      const args = mock.UserToken.args[0];
+
+      // Validate the nameDict argument
+      expect(args[0]).to.have.property('token', 'GITHUB_TOKEN');
+      expect(args[0]).to.have.property('tokenPath', 'GITHUB_TOKEN_PATH');
+      expect(args[0]).to.include({
+        token: 'GITHUB_TOKEN',
+        tokenPath: 'GITHUB_TOKEN_PATH',
+        configToken: 'token',
+        configTokenPath: 'tokenPath',
+      });
+
+      // Validate the configJson argument
+      expect(args[1]).to.deep.equal(configJson);
+
+      // Validate fields are set to the instance
+      expect(githubConfig).to.have.property('field1', 'value1');
+    });
+  });
+
+  describe('token', () => {
+    it('should return from user token value', () => {
+      mock.UserToken.returns({
+        read: sinon.stub().returns({
+          get value() {
+            return 'test-token-value-1';
+          },
+        }),
+      });
+
+      const configJson = {};
+      const githubConfig = new GitHubConfig(configJson, mock);
+      expect(githubConfig.token).to.equal('test-token-value-1');
     });
   });
 });

@@ -13,7 +13,7 @@ class ConfigBase {
    * @param {string} [configJson.tokenPath] - path to the token file.
    * @param { string } prefix - Prefix to read token or token path from environment variables.
    */
-  constructor(configJson, prefix) {
+  constructor(configJson, prefix, mock) {
     // Define the names of the environment variables and configuration keys for the token
     const nameDict = {
       // Environment variable names for the token
@@ -27,7 +27,8 @@ class ConfigBase {
       configTokenPath: 'tokenPath',
     };
 
-    this._token = new UserToken(nameDict, configJson).read();
+    const UserTokenClass = (mock ?? {}).UserToken ?? UserToken;
+    this.#userToken = new UserTokenClass(nameDict, configJson).read();
 
     Object.keys(configJson).forEach((key) => {
       if (key === 'token' || key === 'tokenPath') return;
@@ -35,9 +36,12 @@ class ConfigBase {
     });
   }
 
+  /** @type {UserToken} */
+  #userToken;
+
   /** @property { string } token - The token for the configuration. */
   get token() {
-    return this._token.value;
+    return this.#userToken.value;
   }
 }
 
@@ -50,8 +54,8 @@ class AirtableConfig extends ConfigBase {
    * @param {string} [configJson.tableName] - Airtable table name.
    * @param {string} [configJson.viewName] - Airtable view name.
    */
-  constructor(configJson) {
-    super(configJson, 'AIRTABLE');
+  constructor(configJson, mock) {
+    super(configJson, 'AIRTABLE', mock);
   }
 }
 
@@ -64,8 +68,8 @@ class GitHubConfig extends ConfigBase {
    * @param {string} [configJson.repoName] - Repository name.
    * @param {Object} [configJson.fieldMap] - Mapping of Airtable field names to GitHub issue field names.
    */
-  constructor(configJson) {
-    super(configJson, 'GITHUB');
+  constructor(configJson, mock) {
+    super(configJson, 'GITHUB', mock);
   }
 }
 

@@ -7,8 +7,13 @@ class GqlLoader {
    * Load a GraphQL query from the file system.
    * @param {string} queryName - The name of the query file to load.
    */
-  constructor(queryName) {
-    this.#queryPath = getPath(PathName.GRAPHQL, `${queryName}.graphql`);
+  constructor(queryName, mock) {
+    if (process.env.NODE_ENV !== 'test' && mock != null)
+      throw new Error('Mock object should only be used in test environment.');
+    const { getPath: getPathMock, readFileSync: readFileSyncMock } = mock ?? {};
+    const getPathFunc = getPathMock ?? getPath;
+    this.#queryPath = getPathFunc(PathName.GRAPHQL, `${queryName}.graphql`);
+    this.#readFileSync = readFileSyncMock ?? readFileSync;
   }
 
   /** @type {graphql.DocumentNode} */
@@ -16,6 +21,9 @@ class GqlLoader {
 
   /** @type {string} */
   #queryPath;
+
+  /** @type {function} */
+  #readFileSync;
 
   /**
    * @readonly
@@ -30,7 +38,7 @@ class GqlLoader {
    * @returns {graphql.DocumentNode}
    */
   #loadQuery() {
-    const queryString = readFileSync(this.#queryPath, 'utf8');
+    const queryString = this.#readFileSync(this.#queryPath, 'utf8');
     return gql`
       ${queryString}
     `;
