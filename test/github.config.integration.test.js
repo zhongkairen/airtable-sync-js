@@ -11,6 +11,7 @@ describe('GitHubConfig - Integration Test', () => {
       tokenPath: '/config/path',
       expectedToken: '',
     };
+
     before(() => {
       // Setup code before the test suite runs
       const homeDir = os.homedir();
@@ -19,12 +20,7 @@ describe('GitHubConfig - Integration Test', () => {
       testVars.tokenPath = path.join(homeDir, testVars.tokenFile);
       fs.copyFileSync(sourcePath, testVars.tokenPath);
 
-      fs.readFile(testVars.tokenPath, 'utf8', (err, data) => {
-        if (err) {
-          throw err;
-        }
-        testVars.expectedToken = data;
-      });
+      testVars.expectedToken = fs.readFileSync(testVars.tokenPath, 'utf8');
     });
 
     after(() => {
