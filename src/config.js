@@ -8,10 +8,10 @@ class ConfigBase {
 
   /**
    * constructor
-   * @param { Object } configJson - The configuration object.
+   * @param {Object} configJson - The configuration object.
    * @param {string} [configJson.token] - token text.
    * @param {string} [configJson.tokenPath] - path to the token file.
-   * @param { string } prefix - Prefix to read token or token path from environment variables.
+   * @param {string} prefix - Prefix to read token or token path from environment variables.
    */
   constructor(configJson, prefix, mock) {
     // Define the names of the environment variables and configuration keys for the token
@@ -27,6 +27,9 @@ class ConfigBase {
       configTokenPath: 'tokenPath',
     };
 
+    if (process.env.NODE_ENV !== 'test' && mock !== undefined) {
+      throw new Error('Mocking is only allowed in test environment.');
+    }
     const UserTokenClass = (mock ?? {}).UserToken ?? UserToken;
     this.#userToken = new UserTokenClass(nameDict, configJson).read();
 
@@ -39,7 +42,7 @@ class ConfigBase {
   /** @type {UserToken} */
   #userToken;
 
-  /** @property { string } token - The token for the configuration. */
+  /** @readonly @type {string} token - The token for the configuration. */
   get token() {
     return this.#userToken.value;
   }
