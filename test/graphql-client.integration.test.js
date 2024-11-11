@@ -3,18 +3,18 @@ import { GraphQLClient } from 'graphql-request';
 import fs from 'fs';
 import path from 'path';
 import GitHubGqlClient from '../src/github/graphql-client.js';
-import { PathUtil } from '../src/path-util.js';
+import { PathUtil, $path } from '../src/path-util.js';
 
 describe('GitHubGqlClient - Integration Test', () => {
   let uut;
-  const config = JSON.parse(fs.readFileSync(PathUtil.CONFIG_FILE_PATH, 'utf8'));
+  const config = JSON.parse(fs.readFileSync(PathUtil.file.configJson, 'utf8'));
   const tokenPath = PathUtil.expandHomeDir(config.github.tokenPath); // Expand token path
   const token = fs.readFileSync(tokenPath, 'utf8').trim(); // Read the token from the file
   const queryName = '.$$graphql-client.integration.test.query';
   const queryString = 'query { viewer {login} }';
   const variables = { test: 'variable' };
-  const gqlDirPath = PathUtil.getPath(PathUtil.PathName.GRAPHQL);
-  const gqlFilePath = PathUtil.getPath(PathUtil.PathName.GRAPHQL, `${queryName}.graphql`);
+  const gqlDirPath = PathUtil.dir.graphql;
+  const gqlFilePath = $path`graphql/${queryName}.graphql`;
 
   before(() => {
     expect(fs.existsSync(gqlDirPath)).to.be.true;

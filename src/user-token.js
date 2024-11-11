@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as os from 'os';
-import { expandHomeDir } from './path-util.js';
+import { PathUtil } from './path-util.js';
 
 class UserToken {
   /**
@@ -49,7 +49,7 @@ class UserToken {
     if (!this.token && !this.tokenPath) throw new Error('No valid token available.');
 
     if (!this.token) {
-      const tokenPath = expandHomeDir(this.tokenPath);
+      const tokenPath = PathUtil.expandHomeDir(this.tokenPath);
       this.token = fs.readFileSync(tokenPath, 'utf8').trim(); // Trim to remove leading/trailing whitespace
     }
 

@@ -1,6 +1,6 @@
 import gql from 'graphql-tag';
 import { readFileSync } from 'fs';
-import { getPath, PathName } from '../path-util.js';
+import { PathUtil } from '../path-util.js';
 
 class GqlLoader {
   /**
@@ -10,9 +10,9 @@ class GqlLoader {
   constructor(queryName, mock) {
     if (process.env.NODE_ENV !== 'test' && mock != null)
       throw new Error('Mock object should only be used in test environment.');
-    const { getPath: getPathMock, readFileSync: readFileSyncMock } = mock ?? {};
-    const getPathFunc = getPathMock ?? getPath;
-    this.#queryPath = getPathFunc(PathName.GRAPHQL, `${queryName}.graphql`);
+    const { readFileSync: readFileSyncMock, $path: pathMock } = mock ?? {};
+    const $path = pathMock ?? PathUtil.path;
+    this.#queryPath = $path`graphql/${queryName}.graphql`;
     this.#readFileSync = readFileSyncMock ?? readFileSync;
   }
 

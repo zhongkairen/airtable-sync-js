@@ -1,7 +1,5 @@
 import { expect } from 'chai';
-// import fs from 'fs';
 import { AirtableSchema } from '../src/airtable/schema.js';
-// import { PathUtil } from '../src/path-util.js';
 import { loadConfig } from './config-loader.js';
 import exp from 'constants';
 

@@ -1,11 +1,10 @@
 import fs from 'fs';
-import path from 'path';
 import yargs from 'yargs';
-import { fileURLToPath } from 'url';
 import { hideBin } from 'yargs/helpers';
 import { CustomLogger } from './custom-logger.js';
 import { AirtableConfig, GitHubConfig } from './config.js';
 import { AirtableSync } from './airtable-sync.js';
+import { PathUtil } from './path-util.js';
 
 let logger;
 
@@ -44,28 +43,6 @@ function parseArguments() {
   return logLevel;
 }
 
-function findFirstExistingFile(directories, filename) {
-  for (const dir of directories) {
-    const fullPath = path.join(dir, filename);
-    if (fs.existsSync(fullPath)) {
-      return fullPath;
-    }
-  }
-  return null;
-}
-
-function getConfigFilePath() {
-  const CONFIG_FILE_NAME = 'config.json';
-  const currentDir = process.cwd();
-  const scriptDir = path.dirname(fileURLToPath(import.meta.url));
-
-  const configPath = findFirstExistingFile([currentDir, scriptDir], CONFIG_FILE_NAME);
-  if (!configPath) {
-    throw new Error(`${CONFIG_FILE_NAME} not found in ${currentDir} and ${scriptDir}.`);
-  }
-  return configPath;
-}
-
 async function main() {
   const logLevel = parseArguments();
   CustomLogger.setLogLevel(logLevel);
@@ -75,8 +52,7 @@ async function main() {
 
   let airtableSync;
   try {
-    const configPath = getConfigFilePath();
-    const configJson = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+    const configJson = JSON.parse(fs.readFileSync(PathUtil.file.configJson, 'utf-8'));
     const airtableConfig = new AirtableConfig(configJson.airtable);
     const githubConfig = new GitHubConfig(configJson.github);
 

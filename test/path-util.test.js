@@ -2,83 +2,128 @@ import { expect } from 'chai';
 import path from 'path';
 import { homedir } from 'os';
 import { fileURLToPath } from 'url';
-import { PathName, expandHomeDir, getDirPath, getPath, PathUtil } from '../src/path-util.js';
+import { PathUtil, $path } from '../src/path-util.js';
+import exp from 'constants';
 
 describe('PathUtil', () => {
+  const testDir = path.dirname(fileURLToPath(import.meta.url));
+  const makePath = (relativePath = '') => path.join(testDir, '..', relativePath);
+
   describe('expandHomeDir', () => {
     it('should expand ~ to home directory', () => {
       const inputPath = '~/test';
       const expectedPath = path.join(homedir(), 'test');
-      expect(expandHomeDir(inputPath)).to.equal(expectedPath);
+      expect(PathUtil.expandHomeDir(inputPath)).to.equal(expectedPath);
     });
 
     it('should return the same path if it does not start with ~', () => {
       const inputPath = '/test/path';
-      expect(expandHomeDir(inputPath)).to.equal(inputPath);
+      expect(PathUtil.expandHomeDir(inputPath)).to.equal(inputPath);
     });
 
     it('should throw TypeError if input is not a string', () => {
-      expect(() => expandHomeDir(123)).to.throw(TypeError, 'Input must be a string');
+      expect(() => PathUtil.expandHomeDir(123)).to.throw(TypeError, 'Input must be a string');
     });
   });
 
-  describe('getDirPath', () => {
+  describe('get dir', () => {
     it('should return home directory for "home"', () => {
-      expect(getDirPath('home')).to.equal(homedir());
+      expect(PathUtil.dir.home).to.equal(homedir());
     });
 
-    it('should return root directory for "root"', () => {
-      const expectedPath = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
-      expect(getDirPath('root')).to.equal(expectedPath);
+    it('should return root directory for "packageRoot"', () => {
+      const expectedPath = makePath();
+      expect(PathUtil.dir.packageRoot).to.equal(expectedPath);
     });
 
     it('should return test directory for "test"', () => {
-      const expectedPath = path.join(path.dirname(fileURLToPath(import.meta.url)), '../test');
-      expect(getDirPath('test')).to.equal(expectedPath);
+      const expectedPath = makePath('test');
+      expect(PathUtil.dir.test).to.equal(expectedPath);
     });
 
     it('should return graphql directory for "graphql"', () => {
-      const expectedPath = path.join(
-        path.dirname(fileURLToPath(import.meta.url)),
-        '../src/github/graphql'
-      );
-      expect(getDirPath('graphql')).to.equal(expectedPath);
+      const expectedPath = makePath('src/github/graphql');
+      expect(PathUtil.dir.graphql).to.equal(expectedPath);
     });
 
-    it('should return empty string for unknown pathName', () => {
-      expect(getDirPath('unknown')).to.equal('');
+    it('should return graphql directory for "cwd"', () => {
+      const expectedPath = process.cwd();
+      expect(PathUtil.dir.cwd).to.equal(expectedPath);
     });
   });
 
-  describe('getPath', () => {
+  describe('path', () => {
     it('should return path with trailer for known pathName', () => {
       const expectedPath = path.join(homedir(), 'trailer');
-      expect(getPath('home', 'trailer')).to.equal(expectedPath);
+      expect($path`home/trailer`).to.equal(expectedPath);
     });
 
-    it('should return root path with trailer if pathName is null', () => {
-      const expectedPath = path.join(
-        path.dirname(fileURLToPath(import.meta.url)),
-        '..',
-        'config.json'
-      );
-      expect(getPath(null, 'config.json')).to.equal(expectedPath);
+    it('should return root path with file name with extension', () => {
+      const expectedPath = path.join(testDir, '../config.json');
+      expect($path`packageRoot/config.json`).to.equal(expectedPath);
     });
 
-    it('should return path without trailer if not provided', () => {
-      const expectedPath = homedir();
-      expect(getPath('home')).to.equal(expectedPath);
+    it('should return home path with variable filename', () => {
+      const expectedPath = path.join(homedir(), 'myfile.txt');
+      const myfile = 'myfile.txt';
+      expect($path`home${myfile}`).to.equal(expectedPath);
+    });
+
+    it('should return path with named dir, variable and file extension', () => {
+      const expectedPath = makePath('src/github/graphql/myfile.graphql');
+      const myfile = 'myfile';
+      expect($path`graphql/${myfile}.graphql`).to.equal(expectedPath);
     });
   });
 
-  describe('PathUtil constants', () => {
-    it('should have correct CONFIG_FILE_PATH', () => {
-      const expectedPath = path.join(
-        path.dirname(fileURLToPath(import.meta.url)),
-        '..',
-        'config.json'
+  describe('file', () => {
+    it('should have correct config.json', () => {
+      const expectedPath = makePath('config.json');
+      expect(PathUtil.file.configJson).to.equal(expectedPath);
+    });
+  });
+
+  describe('findFirstExistingFile', () => {
+    it('should return the first existing', () => {
+      const dirs = ['path/to/dir1', 'path/to/dir2', 'path/to/dir3'];
+      const fsMock = {
+        existsSync: (fullPath) => fullPath === 'path/to/dir2/file.txt',
+      };
+
+      expect(PathUtil.findFirstExistingFile(dirs, 'file.txt', fsMock)).to.equal(
+        'path/to/dir2/file.txt'
       );
-      expect(PathUtil.CONFIG_FILE_PATH).to.equal(expectedPath);
+    });
+
+    it('should return the first existing when put last', () => {
+      const dirs = ['path/to/dir1', 'path/to/dir2', 'path/to/dir3'];
+      const fsMock = {
+        existsSync: (fullPath) => fullPath === 'path/to/dir3/file.txt',
+      };
+
+      expect(PathUtil.findFirstExistingFile(dirs, 'file.txt', fsMock)).to.equal(
+        'path/to/dir3/file.txt'
+      );
+    });
+
+    it('should return the first existing when all exists', () => {
+      const dirs = ['path/to/dir1', 'path/to/dir2', 'path/to/dir3'];
+      const fsMock = {
+        existsSync: (fullPath) => true,
+      };
+
+      expect(PathUtil.findFirstExistingFile(dirs, 'file.txt', fsMock)).to.equal(
+        'path/to/dir1/file.txt'
+      );
+    });
+
+    it('should return the undefined if none exists', () => {
+      const dirs = ['path/to/dir1', 'path/to/dir2', 'path/to/dir3'];
+      const fsMock = {
+        existsSync: () => false,
+      };
+
+      expect(PathUtil.findFirstExistingFile(dirs, 'file.txt', fsMock)).to.be.undefined;
     });
   });
 });

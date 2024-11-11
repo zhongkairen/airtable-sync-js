@@ -1,52 +1,81 @@
 import path from 'path';
 import { homedir } from 'os';
 import { fileURLToPath } from 'url';
+import * as fsN from 'fs';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-const PathName = {
-  HOME: 'home',
-  ROOT: 'root',
-  TEST: 'test',
-  GRAPHQL: 'graphql',
-};
+const home = homedir();
+const packageRoot = path.join(__dirname, '..');
+const test = path.join(packageRoot, 'test');
+const graphql = path.join(packageRoot, 'src/github/graphql');
+const cwd = process.cwd();
 
-/**
- * Expands a path that may contain `~` to the home directory.
- * @param {string} inputPath - The input path to expand.
- * @returns {string} - The expanded path.
- */
-const expandHomeDir = (inputPath) => {
-  if (typeof inputPath !== 'string') {
-    throw new TypeError('Input must be a string');
+class PathUtil {
+  static get dir() {
+    return {
+      home,
+      packageRoot,
+      test,
+      graphql,
+      cwd,
+    };
   }
-  return inputPath.replace(/^~(?=$|\/)/, homedir());
-};
 
-const getDirPath = (pathName) => {
-  if (pathName === 'home') return homedir();
-  if (pathName === 'root') return path.join(__dirname, '..');
-  if (pathName === 'test') return path.join(__dirname, '../test');
-  if (pathName === 'graphql') return path.join(__dirname, '../src/github/graphql');
+  static get file() {
+    return {
+      configJson: (() => {
+        const { cwd, packageRoot } = PathUtil.dir;
+        const configFile = 'config.json';
+        const configPath = PathUtil.findFirstExistingFile([cwd, packageRoot], configFile);
+        if (!configPath) throw new Error(`${configFile} not found in ${cwd} and ${packageRoot}.`);
+        return configPath;
+      })(),
+    };
+  }
 
-  return '';
-};
+  static path(strings, ...values) {
+    const basePathWithKey = strings[0].trim();
+    const pathKey = basePathWithKey.split('/')[0];
+    const baseDir = PathUtil.dir[pathKey];
+    if (!baseDir) throw new Error(`Unknown base path: ${pathKey}`);
 
-const getPath = (pathName, pathTrailer = '') => {
-  const dirPath = getDirPath(pathName ?? PathName.ROOT);
-  return path.join(dirPath, pathTrailer);
-};
+    // Reconstruct remaining path by combining strings and values
+    const combinedPath = [basePathWithKey.slice(pathKey.length), ...strings.slice(1)]
+      .map((str, index) => str + (values[index] || ''))
+      .join('');
 
-const PathUtil = {
-  PathName,
-  expandHomeDir,
-  getDirPath,
-  getPath,
+    // Return the complete path
+    return path.join(baseDir, combinedPath);
+  }
 
-  CONFIG_FILE_PATH: getPath(null, 'config.json'),
-};
+  /**
+   * Expands a path that may contain `~` to the home directory.
+   * @param {string} inputPath - The input path to expand.
+   * @returns {string} - The expanded path.
+   */
+  static expandHomeDir(inputPath) {
+    if (typeof inputPath !== 'string') {
+      throw new TypeError('Input must be a string');
+    }
+    return inputPath.replace(/^~(?=$|\/)/, homedir());
+  }
 
-const __filename__ = (metaUrl) => fileURLToPath(metaUrl);
+  /**
+   * Find the first existing file in a list of directories.
+   * @param {Array<string>} directories
+   * @param {string} filename
+   * @param {fs} fs - File system module for testing mocks
+   * @returns {string} full path to the first existing file or undefined if none found
+   */
+  static findFirstExistingFile(directories, filename, fs = fsN) {
+    for (const dir of directories) {
+      const fullPath = path.join(dir, filename);
+      if (fs.existsSync(fullPath)) return fullPath;
+    }
+  }
+}
 
-export { PathName, expandHomeDir, getDirPath, getPath, PathUtil, __filename__ };
+const $path = PathUtil.path;
+
+export { PathUtil, $path };

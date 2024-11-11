@@ -4,10 +4,11 @@ import fs from 'fs';
 import { GitHubClient } from '../src/github/client.js';
 import { GitHubGqlQuery } from '../src/github/graphql-query.js';
 import { CustomLogger } from '../src/custom-logger.js';
-import { PathUtil } from '../src/path-util.js';
+import { PathUtil, $path } from '../src/path-util.js';
 
 describe('GitHubClient - Integration Test', () => {
-  const config = JSON.parse(fs.readFileSync(PathUtil.CONFIG_FILE_PATH, 'utf8'));
+  console.log('PathUtil.file', $path`packageRoot/config.json`);
+  const config = JSON.parse(fs.readFileSync(PathUtil.file.configJson, 'utf8'));
   const githubConfig = config.github;
   const tokenPath = PathUtil.expandHomeDir(config.github.tokenPath); // Expand token path
   const token = fs.readFileSync(tokenPath, 'utf8').trim();
