@@ -12,13 +12,21 @@ let logger;
 function parseArguments() {
   const argv = yargs(hideBin(process.argv))
     .usage('Usage: $0 [options]')
-    .option('d', { alias: 'debug', type: 'boolean', describe: 'Set logging level to DEBUG' })
+    .option('d', {
+      alias: 'debug',
+      type: 'boolean',
+      describe: 'Set logging level to DEBUG',
+    })
     .option('v', {
       alias: 'verbose',
       type: 'boolean',
       describe: 'Set logging level to VERBOSE',
     })
-    .option('i', { alias: 'info', type: 'boolean', describe: 'Set logging level to INFO' })
+    .option('i', {
+      alias: 'info',
+      type: 'boolean',
+      describe: 'Set logging level to INFO',
+    })
     .option('w', {
       alias: 'warning',
       type: 'boolean',
