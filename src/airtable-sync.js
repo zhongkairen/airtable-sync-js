@@ -4,11 +4,17 @@ import { AirtableClient } from './airtable/client.js';
 import { AirtableRecord } from './airtable/record.js';
 import { UpdateResult } from './airtable/update-result.js';
 import { CustomLogger } from './custom-logger.js';
+import { AirtableConfig, GitHubConfig } from './config.js';
 
 const logger = new CustomLogger(import.meta.url);
 
 export class AirtableSync {
-  constructor(airtableConfig, githubConfig) {
+  /**
+   * Initialize the Airtable sync service
+   * @param {AirtableConfig} airtableConfig
+   * @param {GitHubConfig} githubConfig
+   */
+  constructor({ airtableConfig, githubConfig }) {
     this.airtableConfig = airtableConfig;
     this.#airtableClient = new AirtableClient(airtableConfig);
     this.github = new GitHubClient(githubConfig);
@@ -27,8 +33,11 @@ export class AirtableSync {
   /** @type {AirtableClient>} */
   #airtableClient;
 
+  /**
+   * Reconcile the records in Airtable with the issues in GitHub
+   * @returns {Promise<void>}
+   */
   async sync() {
-    // Reconcile the records in Airtable with the issues in GitHub
     await this.#prepSync();
 
     const recordsToUpdate = [];
@@ -56,22 +65,32 @@ export class AirtableSync {
     this.#logSyncResult(updateResult, logger);
   }
 
+  /**
+   * @readonly
+   * @returns {object} the field mapping between GitHub and Airtable
+   */
   get fieldMap() {
     // Map the fields from GitHub to Airtable
     return this.#fieldMap;
   }
 
+  /**
+   * @readonly
+   * @type {AirtableClient}
+   */
   get client() {
     return this.#airtableClient;
   }
 
+  /**
+   * Prepare the synchronization process between Airtable and GitHub
+   * @returns {Promise<void>}
+   */
   async #prepSync() {
     await this.#airtableClient.init();
 
-    // Prepare the synchronization process between Airtable and GitHub
-    if (!(this.#verifySyncFields() && this.#verifyRecordField())) {
+    if (!(this.#verifySyncFields() && this.#verifyRecordField()))
       throw new Error('Sync aborted due to missing fields in Airtable table schema.');
-    }
 
     // Read all records in Airtable
     await this.#airtableClient.readRecords();
@@ -81,15 +100,18 @@ export class AirtableSync {
     await this.github.fetchProjectItems();
   }
 
+  /**
+   * Verify the fields to be synced are in the Airtable table schema
+   * @returns {boolean} true if the fields to be synced are in the Airtable table schema
+   */
   #verifySyncFields() {
-    // Verify the fields to be synced are in the Airtable table schema
     const missingFields = Object.values(this.fieldMap).filter(
       (field) => !this.#airtableClient.fieldInSchema(field)
     );
 
     if (Object.keys(this.#airtableClient.tableFieldsSchema).length === 0) {
-      console.log('tableSchema', JSON.stringify(this.#airtableClient.tableSchema, null, 2));
-      logger.error('Airtable table schema is empty.');
+      logger.debug('tableSchema', JSON.stringify(this.#airtableClient.tableSchema, null, 2));
+      logger.error('Airtable table field schema is empty.');
     } else if (missingFields.length > 0) {
       const fields = JSON.stringify(missingFields);
       const schema = JSON.stringify(Object.keys(this.#airtableClient.tableFieldsSchema));
@@ -99,22 +121,31 @@ export class AirtableSync {
     return missingFields.length === 0;
   }
 
+  /**
+   * Verify the record field against the Airtable table fields schema
+   * @returns {boolean} true if the record field is valid
+   */
   #verifyRecordField() {
-    // Verify the record field against the Airtable table fields schema
     const { valid, error } = AirtableRecord.validateSchema(this.#airtableClient.tableFieldsSchema);
-    if (error) {
-      logger.error(error);
-    }
+    if (error) logger.error(error);
     return valid;
   }
 
+  /**
+   * Retrieve the GitHub issue or create one from an Airtable record
+   * @param {AirtableRecord} record - the Airtable record
+   * @returns {Promise<GitHubIssue>}
+   */
   async #getIssue(record) {
-    // Retrieve the GitHub issue or create one from an Airtable record
     return await this.github.fetchIssue(record.issueNumber);
   }
 
+  /**
+   * Log the final sync result based on update counts
+   * @param {UpdateResult} syncResult
+   * @param {*} logger - the logger instance
+   */
   #logSyncResult(syncResult, logger) {
-    // Log the final sync result based on update counts
     if (syncResult.error) logger.error(syncResult.error);
 
     if (syncResult.updates) logger.verbose('\n' + syncResult.updates);

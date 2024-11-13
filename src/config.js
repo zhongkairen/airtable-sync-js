@@ -1,4 +1,6 @@
+import { promises as fs } from 'fs';
 import { UserToken } from './user-token.js';
+import { PathUtil } from './path-util.js';
 
 class ConfigBase {
   /**
@@ -76,4 +78,30 @@ class GitHubConfig extends ConfigBase {
   }
 }
 
-export { AirtableConfig, GitHubConfig };
+class ConfigJson {
+  constructor(fileName) {
+    this.#fileName = fileName;
+    this.#airtableConfig = null;
+    this.#githubConfig = null;
+  }
+
+  #fileName;
+  #json;
+  #airtableConfig;
+  #githubConfig;
+
+  async load() {
+    const data = await fs.readFile(this.#fileName, 'utf-8');
+    this.#json = JSON.parse(data);
+  }
+
+  get airtableConfig() {
+    return (this.#airtableConfig ??= new AirtableConfig(this.#json.airtable));
+  }
+
+  get githubConfig() {
+    return (this.#githubConfig ??= new GitHubConfig(this.#json.github));
+  }
+}
+
+export { AirtableConfig, GitHubConfig, ConfigJson };
