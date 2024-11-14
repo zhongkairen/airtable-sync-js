@@ -39,6 +39,7 @@ export class AirtableSync {
    */
   async sync() {
     await this.#prepSync();
+    CustomLogger.timer.tapIn('Prepared sync');
 
     const recordsToUpdate = [];
 
@@ -54,12 +55,21 @@ export class AirtableSync {
         continue;
       }
       const updatedFields = this.#getUpdateFields(record, issue);
-      const recordToUpdate = record.setFields(updatedFields);
-      recordToUpdate && recordsToUpdate.push(recordToUpdate);
+      if (Object.keys(updatedFields).length === 0) {
+        const recordToUpdate = record.setFields(updatedFields);
+        recordsToUpdate.push(recordToUpdate);
+      }
     }
 
     // Perform the batch update and handle the result
+    CustomLogger.timer.tapIn('Before updating records');
+
+    // todo: check why all the records are being updated
+    logger.debug(`recordsToUpdate=\n ${JSON.stringify(recordsToUpdate, null, 2)}`);
+    logger.debug(`Updating ${recordsToUpdate.length} record(s) in Airtable...`);
     const updateResult = await this.#airtableClient.batchUpdate(recordsToUpdate);
+    logger.debug(`Updated ${recordsToUpdate.length} record(s) in Airtable...`);
+    CustomLogger.timer.tapIn('Done updating records');
 
     // Log the final sync result
     this.#logSyncResult(updateResult, logger);
@@ -151,7 +161,7 @@ export class AirtableSync {
     if (syncResult.updates) logger.verbose('\n' + syncResult.updates);
 
     logger.info(
-      `synced ${this.#airtableClient.recordsInCurrentRepo.length} record(s): ${syncResult}`
+      `synced ${this.#airtableClient.recordsInCurrentRepo.length} record(s): ${syncResult}.`
     );
   }
 

@@ -3,7 +3,10 @@ import { CustomLogger } from './custom-logger.js';
 import { ConfigJson } from './config.js';
 import { AirtableSync } from './airtable-sync.js';
 import { PathUtil } from './path-util.js';
+import { PerfTimer } from './timer.js';
 
+const timer = new PerfTimer();
+CustomLogger.timer = timer;
 class Main {
   constructor() {
     this.logger = null;
@@ -17,21 +20,17 @@ class Main {
       CustomLogger.setLogLevel(logLevel);
       this.logger = new CustomLogger(import.meta.url);
       this.logger.info(`Log level set to '${logLevel}'`);
+      timer.tapIn('Log level set');
 
       await this.loadConfiguration();
+      timer.tapIn('Loaded configuration');
       await this.syncRecords();
+      timer.tapIn('Synced records');
     } catch (error) {
       console.error(`Unexpected error: ${error.message}`);
     }
 
-    if (CustomLogger.globalLogLevel === 'debug') {
-      // Log the elapsed time
-      const end = process.hrtime(startTime);
-      const minutes = String(Math.floor(end[0] / 60)).padStart(2, '0');
-      const seconds = String(end[0] % 60).padStart(2, '0');
-      const centiseconds = String(Math.floor(end[1] / 10_000_000)).padStart(2, '0');
-      this.logger.debug(`Elapsed time: ${minutes}:${seconds}.${centiseconds}`);
-    }
+    timer.print(this.logger);
   }
 
   async loadConfiguration() {
