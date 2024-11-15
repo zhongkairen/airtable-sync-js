@@ -1,0 +1,54 @@
+name: Build, Package, and Release
+
+on:
+  push:
+    tags:
+      - "v*"
+    branches:
+      - main
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout the repository
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Step 2: Set up Node.js (or other environment)
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "16"
+
+      # Step 3: Install dependencies
+      - name: Install dependencies
+        run: npm install
+
+      # Step 4: Build and package
+      - name: Build and package
+        run: |
+          npm run build
+          tar -czvf dist/your-package.tar.gz -C dist .
+
+      # Step 5: Extract changelog for the current version
+      - name: Extract release notes from changelog
+        id: get_changelog
+        run: |
+          VERSION=${{ github.ref_name }}
+          awk "/## \\[${VERSION}\\]/,/## \\[/" CHANGELOG.md | sed '$d' > changelog.txt
+        shell: bash
+
+      # Step 6: Create GitHub release and attach files
+      - name: Create Release and Upload Assets
+        uses: softprops/action-gh-release@v1
+        with:
+          files: dist/your-package.tar.gz
+          name: Release ${{ github.ref_name }}
+          body: ${{ steps.get_changelog.outputs.notes }}
+
+      # Step 7: Convert changelog.txt to an output variable
+      - name: Read changelog into output
+        id: prepare_body
+        run: echo "::set-output name=notes::$(cat changelog.txt)"

@@ -3,11 +3,18 @@
   "version": "1.0.0",
   "main": "index.js",
   "type": "module",
+  "bin": {
+    "airtable-sync": "./index.js"
+  },
   "scripts": {
+    "build": "node build.js dist",
+    "pack": "cd dist && npm pack",
+    "build-and-pack": "npm run build && npm run pack",
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
     "format:class-order": "eslint --fix src -c .eslintrc.cjs",
     "start": "node --no-warnings --experimental-specifier-resolution=node src/index.js",
+    "start:prod": "node --no-warnings --experimental-specifier-resolution=node dist/index.js",
     "dev": "node --no-warnings --experimental-specifier-resolution=node src/index.js -d",
     "test": "mocha --no-warnings --reporter dot 'test/**/*.test.js' --ignore 'test/**/*.integration.test.js'",
     "test:integration": "mocha --no-warnings --reporter spec 'test/**/*.integration.test.js'",
@@ -19,10 +26,12 @@
   "devDependencies": {
     "chai": "^5.1.2",
     "chai-as-promised": "^8.0.0",
+    "cpx": "^1.5.0",
     "eslint": "^9.14.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.2.1",
     "eslint-plugin-sort-class-members": "^1.21.0",
+    "glob": "^11.0.0",
     "mocha": "^10.8.2",
     "mock-require": "^3.0.3",
     "prettier": "^3.3.3",
@@ -31,6 +40,7 @@
   "dependencies": {
     "airtable-plus": "^1.0.4",
     "date-fns": "^4.1.0",
+    "esbuild": "^0.24.0",
     "fs": "^0.0.1-security",
     "graphql": "^16.9.0",
     "graphql-request": "^7.1.0",

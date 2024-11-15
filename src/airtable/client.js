@@ -52,7 +52,7 @@ class AirtableClient {
    */
   async readRecords(maxRecords = Infinity) {
     logger.verbose(
-      `Reading Airtable records from base: ${this.config.appId} table: ${this.config.tableName} view: '${this.config.viewName}'`
+      `Reading Airtable records from baseId: ${this.config.baseId}, tableName: ${this.config.tableName}, tableId: ${this.config.tableId}, viewName: ${this.config.viewName}`
     );
 
     const options = {

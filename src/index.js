@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import { parseArguments } from './arg-parser.js';
 import { CustomLogger } from './custom-logger.js';
 import { ConfigJson } from './config.js';

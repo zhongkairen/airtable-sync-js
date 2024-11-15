@@ -5,10 +5,15 @@ import * as fsN from 'fs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
+const isRunningFromInstalled = process.argv[1].includes('node_modules/.bin');
+
 const home = homedir();
-const packageRoot = path.join(__dirname, '..');
+const packageRoot = path.join(__dirname, isRunningFromInstalled ? '.' : '..');
 const test = path.join(packageRoot, 'test');
-const graphql = path.join(packageRoot, 'src/github/graphql');
+const graphql = path.join(
+  packageRoot,
+  isRunningFromInstalled ? 'github/graphql' : 'src/github/graphql'
+);
 const cwd = process.cwd();
 
 class PathUtil {
