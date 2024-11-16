@@ -2,10 +2,14 @@
 
 ## [v1.0.0]
 ### Added
-- Feature 1
+- Debug timer
+- Integration tests
+- GraphQL loaded from files
 
 ### Changed
-- Change 1
+- Code structure
+- Improve logging of issue and record
 
 ### Fixed
-- Bugfix 1
+- Log level
+- Letter case in example config file
