@@ -7,9 +7,10 @@ on:
       - main
     paths:
       - "release/*"
-  workflow_dispatch:
+  push:
     branches:
-      - "release/*"
+      - ci/release-wf'
+  workflow_dispatch:
 
 jobs:
   release:
@@ -19,18 +20,23 @@ jobs:
       - name: Check if the branch is a release branch
         run: |
           BRANCH_NAME="${GITHUB_REF##*/}"
+          echo "Current branch: $BRANCH_NAME"
+          echo "Event name: ${GITHUB_EVENT_NAME}"
           if [[ ! "$BRANCH_NAME" =~ ^release/ ]]; then
-            echo "This workflow can only be triggered from a release branch (release/*)."
-            exit 1
+            echo "This workflow can only be triggered from a release branch (release/*). Current branch: $BRANCH_NAME."
+            # If the workflow was manually triggered, allow it to run
+            if [[ "${GITHUB_EVENT_NAME}" != "workflow_dispatch" ]]; then
+              exit 1
+            fi
           fi
 
       - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Set up Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: "16"
+          node-version: "20"
 
       - name: Install dependencies
         run: npm install
@@ -39,9 +45,13 @@ jobs:
         run: |
           VERSION_IN_TAG=${GITHUB_REF#refs/tags/}
           VERSION_IN_PACKAGE_JSON=$(node -p "require('./package.json').version")
+          echo "VERSION_IN_PACKAGE_JSON=$VERSION_IN_PACKAGE_JSON" >> $GITHUB_ENV
+
           if [ "$VERSION_IN_TAG" != "$VERSION_IN_PACKAGE_JSON" ]; then
             echo "Error: Tag version $VERSION_IN_TAG does not match package.json version $VERSION_IN_PACKAGE_JSON"
-            exit 1
+            if [[ "${GITHUB_EVENT_NAME}" != "workflow_dispatch" ]]; then
+              exit 1
+            fi
           else
             echo "Version match successful: $VERSION_IN_TAG"
           fi
@@ -57,23 +67,41 @@ jobs:
         run: |
           npm run build-and-pack
           echo "Listing the generated package zip file:"
-          ls -lh dist/airtable-sync-js-${{ github.ref_name }}.tar.gz
+          ls -lh dist/airtable-sync-js-*.tgz
+
+      - name: Extract changes from changelog for the corresponding version
+        id: prepare_body
+        run: |
+          # Extract the multi-line changes under the version section
+          # example: ## [v1.0.0] until the next ## section or EOF
+          perl .github/workflows/extract-changes.pl "$VERSION_IN_PACKAGE_JSON" > release_notes.txt
 
       # Conditional step for dry run if manually triggered
       - name: Dry run release if manually triggered
         if: github.event_name == 'workflow_dispatch'
         run: |
           echo "Dry run: Skipping the actual release process."
-          echo "Would have created release for version $VERSION_IN_TAG."
-          echo "Release body:"
-          cat changelog.txt
-          echo "Release name: Release $VERSION_IN_TAG"
+          echo "files: dist/airtable-sync-js-$VERSION_IN_PACKAGE_JSON.tgz"
+          echo "name: Release v$VERSION_IN_PACKAGE_JSON"
+          echo "body: $(cat release_notes.txt)"
+          echo
+          echo "cat CHANGELOG.md"
+          cat CHANGELOG.md
 
       # Step to create release and upload assets (normal run)
       - name: Create Release and Upload Assets
         if: github.event_name != 'workflow_dispatch' # Only run this for PR merges
         uses: softprops/action-gh-release@v1
         with:
-          files: dist/airtable-sync-js-${{ github.ref_name }}.tar.gz
-          name: Release ${{ github.ref_name }}
-          body: ${{ steps.prepare_body.outputs.notes }}
+          files: dist/airtable-sync-js-$VERSION_IN_PACKAGE_JSON.tgz
+          name: Release $VERSION_IN_PACKAGE_JSON
+          body_path: release_notes.txt
+
+      - name: Upload artifacts
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-files
+          path: |
+            release_notes.txt
+            dist/airtable-sync-js-${{ env.VERSION_IN_PACKAGE_JSON }}.tgz
