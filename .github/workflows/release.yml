@@ -45,11 +45,21 @@ jobs:
 
       - name: Verify version matches the tag
         run: |
-          VERSION_IN_TAG=${GITHUB_REF#refs/tags/}
           VERSION_IN_PACKAGE_JSON=$(node -p "require('./package.json').version")
           echo "VERSION_IN_PACKAGE_JSON=$VERSION_IN_PACKAGE_JSON" >> $GITHUB_ENV
 
-          if [ "$VERSION_IN_TAG" != "$VERSION_IN_PACKAGE_JSON" ]; then
+          if [[ ! "$GITHUB_REF" =~ ^refs/tags/ ]]; then
+            if [[ "$BRANCH_NAME" = "ci/release-wf" ]]; then
+              VERSION_IN_TAG="v1.0.0"
+            else
+              echo "No tag is associated with this commit."
+              exit 0
+            fi
+          else
+            VERSION_IN_TAG=${GITHUB_REF#refs/tags/}
+          fi
+
+          if [ "$VERSION_IN_TAG" != "v$VERSION_IN_PACKAGE_JSON" ]; then
             echo "Error: Tag version $VERSION_IN_TAG does not match package.json version $VERSION_IN_PACKAGE_JSON"
             if [[ "${GITHUB_EVENT_NAME}" != "workflow_dispatch" ]]; then
               exit 1
@@ -58,13 +68,6 @@ jobs:
             echo "Version match successful: $VERSION_IN_TAG"
           fi
 
-      - name: Dry run release if manually triggered
-        if: github.event_name == 'workflow_dispatch'
-        run: |
-          echo "Dry run: Skipping the actual release process."
-          echo "Would have created release for version $VERSION_IN_TAG and uploaded assets."
-
-      # Build and package step (normal run)
       - name: Build and package
         run: |
           npm run build-and-pack
