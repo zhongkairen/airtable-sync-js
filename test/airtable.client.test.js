@@ -58,11 +58,16 @@ describe('AirtableClient', () => {
       await uut.readRecords();
 
       expect(loggerVerboseStub.calledOnce).to.be.true;
-      expect(
-        loggerVerboseStub.calledWith(
-          `Reading Airtable records from base: ${config.appId} table: ${config.tableName} view: '${config.viewName}'`
-        )
-      ).to.be.true;
+      const expectedFields = {
+        baseId: config.baseId,
+        tableName: config.tableName,
+        tableId: config.tableId,
+        viewName: config.viewName,
+      };
+      const arg = loggerVerboseStub.getCall(0).args[0];
+      Object.entries(expectedFields).forEach(([key, value]) => {
+        expect(arg, key).to.include(`${key}: ${value}`);
+      });
     });
 
     it('should handle empty records', async () => {
