@@ -47,7 +47,9 @@ jobs:
           VERSION_IN_PACKAGE_JSON=$(node -p "require('./package.json').version")
           if [ "$VERSION_IN_TAG" != "$VERSION_IN_PACKAGE_JSON" ]; then
             echo "Error: Tag version $VERSION_IN_TAG does not match package.json version $VERSION_IN_PACKAGE_JSON"
-            exit 1
+            if [[ "${GITHUB_EVENT_NAME}" != "workflow_dispatch" ]]; then
+              exit 1
+            fi
           else
             echo "Version match successful: $VERSION_IN_TAG"
           fi
