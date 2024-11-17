@@ -97,8 +97,8 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ env.TAG }}
-          files: dist/airtable-sync-js-$VERSION_IN_PACKAGE_JSON.tgz
-          name: Release $VERSION_IN_PACKAGE_JSON
+          files: dist/airtable-sync-js-${{ env.VERSION_IN_PACKAGE_JSON }}.tgz
+          name: Release ${{ env.VERSION_IN_PACKAGE_JSON }}
           body_path: release_notes.txt
 
       - name: Upload artifacts
