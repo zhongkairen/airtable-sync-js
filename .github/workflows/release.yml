@@ -69,14 +69,29 @@ jobs:
           echo "Listing the generated package zip file:"
           ls -lh dist/airtable-sync-js-*.tgz
 
+      - name: Extract changes from changelog for the corresponding version
+        id: prepare_body
+        run: |
+          # Extract the multi-line changes under the version section
+          cp .github/workflows/extract-changes.pl extract-changes.pl
+          chmod +x extract-changes.pl
+
+          # example: ## [v1.0.0] until the next ## section or EOF
+          RELEASE_NOTES=$(./extract-changes.pl "$VERSION_IN_PACKAGE_JSON")
+
+          # Set the environment variable for the next steps
+          echo "RELEASE_NOTES=$RELEASE_NOTES" >> $GITHUB_ENV
+
       # Conditional step for dry run if manually triggered
       - name: Dry run release if manually triggered
         if: github.event_name == 'workflow_dispatch'
         run: |
           echo "Dry run: Skipping the actual release process."
           echo "files: dist/airtable-sync-js-$VERSION_IN_PACKAGE_JSON.tgz"
-          echo "name: Release $VERSION_IN_PACKAGE_JSON"
-          echo "body: ${{ steps.prepare_body.outputs.notes }}"
+          echo "name: Release v$VERSION_IN_PACKAGE_JSON"
+          echo "body: $RELEASE_NOTES"
+          echo
+          echo "cat CHANGELOG.md"
           cat CHANGELOG.md
 
       # Step to create release and upload assets (normal run)
@@ -86,4 +101,4 @@ jobs:
         with:
           files: dist/airtable-sync-js-$VERSION_IN_PACKAGE_JSON.tgz
           name: Release $VERSION_IN_PACKAGE_JSON
-          body: ${{ steps.prepare_body.outputs.notes }}
+          body: $RELEASE_NOTES
