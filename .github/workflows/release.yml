@@ -1,0 +1,79 @@
+name: Make a new release
+
+# When a release branch is merged to main, run the release job
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "release/*"
+  workflow_dispatch:
+    branches:
+      - "release/*"
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check if the branch is a release branch
+        run: |
+          BRANCH_NAME="${GITHUB_REF##*/}"
+          if [[ ! "$BRANCH_NAME" =~ ^release/ ]]; then
+            echo "This workflow can only be triggered from a release branch (release/*)."
+            exit 1
+          fi
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "16"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Verify version matches the tag
+        run: |
+          VERSION_IN_TAG=${GITHUB_REF#refs/tags/}
+          VERSION_IN_PACKAGE_JSON=$(node -p "require('./package.json').version")
+          if [ "$VERSION_IN_TAG" != "$VERSION_IN_PACKAGE_JSON" ]; then
+            echo "Error: Tag version $VERSION_IN_TAG does not match package.json version $VERSION_IN_PACKAGE_JSON"
+            exit 1
+          else
+            echo "Version match successful: $VERSION_IN_TAG"
+          fi
+
+      - name: Dry run release if manually triggered
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          echo "Dry run: Skipping the actual release process."
+          echo "Would have created release for version $VERSION_IN_TAG and uploaded assets."
+
+      # Build and package step (normal run)
+      - name: Build and package
+        run: |
+          npm run build-and-pack
+          echo "Listing the generated package zip file:"
+          ls -lh dist/airtable-sync-js-${{ github.ref_name }}.tar.gz
+
+      # Conditional step for dry run if manually triggered
+      - name: Dry run release if manually triggered
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          echo "Dry run: Skipping the actual release process."
+          echo "Would have created release for version $VERSION_IN_TAG."
+          echo "Release body:"
+          cat changelog.txt
+          echo "Release name: Release $VERSION_IN_TAG"
+
+      # Step to create release and upload assets (normal run)
+      - name: Create Release and Upload Assets
+        if: github.event_name != 'workflow_dispatch' # Only run this for PR merges
+        uses: softprops/action-gh-release@v1
+        with:
+          files: dist/airtable-sync-js-${{ github.ref_name }}.tar.gz
+          name: Release ${{ github.ref_name }}
+          body: ${{ steps.prepare_body.outputs.notes }}

@@ -1,0 +1,25 @@
+{
+  "airtable": {
+    "_comment.baseId": "Sync Sandbox",
+    "baseId": "app5c1A4u4zw1UbXN",
+
+    "_comment.tableId": "airtable-sync table",
+    "tableId": "tblma0DImG8wj84Va",
+    "tableName": "airtable-sync",
+
+    "tokenPath": "~/.ssh/airtable.records_wr.schema_base_r.sync_sandbox.pat"
+  },
+  "github": {
+    "repoOwner": "zhongkairen",
+    "repoName": "airtable-sync",
+    "projectName": "Airtable Sync",
+    "fieldMap": {
+      "Start": "Start Date",
+      "End": "Delivery Date",
+      "Alias": "Alias",
+      "Start Count": "Start Count",
+      "Priority": "Priority"
+    },
+    "tokenPath": "~/.ssh/gh.repo.project.pat"
+  }
+}

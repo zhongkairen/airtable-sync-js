@@ -1,0 +1,270 @@
+{
+  "_comment": "https://api.airtable.com/v0/meta/bases/${baseId}/tables",
+  "tables": [
+    {
+      "id": "tblma0DImG8wj84Va",
+      "name": "airtable-sync",
+      "primaryFieldId": "fldrToCxNQx5hwLIm",
+      "fields": [
+        {
+          "type": "singleLineText",
+          "id": "fldrToCxNQx5hwLIm",
+          "name": "Title"
+        },
+        {
+          "type": "number",
+          "options": {
+            "precision": 0
+          },
+          "id": "fld0hPlzJSJLrky30",
+          "name": "Issue Number"
+        },
+        {
+          "type": "singleSelect",
+          "options": {
+            "choices": [
+              {
+                "id": "selPJR72GgAZMpqQW",
+                "name": "closed",
+                "color": "blueLight2"
+              },
+              {
+                "id": "sel7j6wUuvRqK4dQe",
+                "name": "open",
+                "color": "cyanLight2"
+              }
+            ]
+          },
+          "id": "fldSZzBWn6X51QBT8",
+          "name": "State"
+        },
+        {
+          "type": "date",
+          "options": {
+            "dateFormat": {
+              "name": "iso",
+              "format": "YYYY-MM-DD"
+            }
+          },
+          "id": "fldnSecENJTFYfFsh",
+          "name": "Start Date"
+        },
+        {
+          "type": "date",
+          "options": {
+            "dateFormat": {
+              "name": "iso",
+              "format": "YYYY-MM-DD"
+            }
+          },
+          "id": "fldvMMVRGH2W4YnAV",
+          "name": "Delivery Date"
+        },
+        {
+          "type": "button",
+          "id": "fldvMF7tZUHrfYmkf",
+          "name": "Open in Github"
+        },
+        {
+          "type": "multipleSelects",
+          "options": {
+            "choices": [
+              {
+                "id": "selPtDLji8LIEIQlM",
+                "name": "airtable",
+                "color": "blueLight2"
+              }
+            ]
+          },
+          "id": "fldu0G60zN4E8zyJK",
+          "name": "Labels"
+        },
+        {
+          "type": "richText",
+          "id": "flda2PZ0ifVWB4tI4",
+          "name": "Body"
+        },
+        {
+          "type": "dateTime",
+          "options": {
+            "dateFormat": {
+              "name": "local",
+              "format": "l"
+            },
+            "timeFormat": {
+              "name": "12hour",
+              "format": "h:mma"
+            },
+            "timeZone": "client"
+          },
+          "id": "fldU60TGzSrAZThvr",
+          "name": "Updated At"
+        },
+        {
+          "type": "singleLineText",
+          "id": "fldCPrBoakAL1CQDz",
+          "name": "Id"
+        },
+        {
+          "type": "singleSelect",
+          "options": {
+            "choices": [
+              {
+                "id": "seli388fXiOG2otFF",
+                "name": "P0",
+                "color": "blueLight2"
+              },
+              {
+                "id": "selhwjA9tH8EEntOT",
+                "name": "P1",
+                "color": "cyanLight2"
+              },
+              {
+                "id": "seleug3vHBQp2CY3S",
+                "name": "P2",
+                "color": "tealLight2"
+              },
+              {
+                "id": "selxibh03B3UsTXZo",
+                "name": "P3",
+                "color": "greenLight2"
+              },
+              {
+                "id": "sel8l07DYYv3Ywc8N",
+                "name": "",
+                "color": "yellowLight2"
+              }
+            ]
+          },
+          "id": "fldAbjv3xKdw8TjlI",
+          "name": "Priority"
+        },
+        {
+          "type": "singleLineText",
+          "id": "fldoT6Iv066OCVZhE",
+          "name": "Alias"
+        },
+        {
+          "type": "number",
+          "options": {
+            "precision": 0
+          },
+          "id": "fldr2RbuSk7E4i0kG",
+          "name": "Start count"
+        },
+        {
+          "type": "singleSelect",
+          "options": {
+            "choices": [
+              {
+                "id": "selRgOhzqZ0tOEuYx",
+                "name": "Iteration 1",
+                "color": "blueLight2"
+              },
+              {
+                "id": "selP3m7zbV2TmB8Fm",
+                "name": "Iteration 2",
+                "color": "cyanLight2"
+              }
+            ]
+          },
+          "id": "fldoqz5d6K88yTGAj",
+          "name": "Iteration"
+        },
+        {
+          "type": "dateTime",
+          "options": {
+            "dateFormat": {
+              "name": "local",
+              "format": "l"
+            },
+            "timeFormat": {
+              "name": "12hour",
+              "format": "h:mma"
+            },
+            "timeZone": "client"
+          },
+          "id": "fldUa7huyDS1gwiBG",
+          "name": "Created At"
+        },
+        {
+          "type": "dateTime",
+          "options": {
+            "dateFormat": {
+              "name": "local",
+              "format": "l"
+            },
+            "timeFormat": {
+              "name": "12hour",
+              "format": "h:mma"
+            },
+            "timeZone": "client"
+          },
+          "id": "fldX5DRfrM8psz98W",
+          "name": "Closed At"
+        },
+        {
+          "type": "singleLineText",
+          "id": "fldwt3uLFSL1gA3tF",
+          "name": "Created By"
+        },
+        {
+          "type": "singleLineText",
+          "id": "fldtziR2x3jMzIWHv",
+          "name": "Assignees"
+        },
+        {
+          "type": "checkbox",
+          "options": {
+            "icon": "check",
+            "color": "greenBright"
+          },
+          "id": "fldtK5McOcVebOBAH",
+          "name": "Locked"
+        },
+        {
+          "type": "singleSelect",
+          "options": {
+            "choices": []
+          },
+          "id": "fldZRIyVV441JAcXn",
+          "name": "Milestone"
+        },
+        {
+          "type": "number",
+          "options": {
+            "precision": 0
+          },
+          "id": "fldzvkl4XJxYbs0Ms",
+          "name": "Comment Count"
+        },
+        {
+          "type": "url",
+          "id": "fldIqP19UXucb7EL8",
+          "name": "Issue Link"
+        },
+        {
+          "type": "externalSyncSource",
+          "options": {
+            "choices": [
+              {
+                "id": "seltvS5ENAEO1fugl",
+                "name": "zhongkairen/airtable-sync",
+                "color": "greenDark1"
+              }
+            ]
+          },
+          "id": "fldbK87sOhDFrRNJN",
+          "name": "Sync Source"
+        }
+      ],
+      "views": [
+        {
+          "id": "viwS9ERBqHQVNRvsx",
+          "name": "Grid view",
+          "type": "grid"
+        }
+      ]
+    }
+  ]
+}

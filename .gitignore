@@ -1,7 +1,5 @@
 node_modules
-/.nyc_output/
-/coverage/
-/lib/
+dist/
 .DS_Store
 .vscode
 .idea

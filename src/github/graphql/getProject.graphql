@@ -1,0 +1,10 @@
+query getProject($repoOwner: String!, $repoName: String!) {
+  repository(owner: $repoOwner, name: $repoName) {
+    projectsV2(first: 100) {
+      nodes {
+        id
+        title
+      }
+    }
+  }
+}

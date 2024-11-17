@@ -1,0 +1,94 @@
+{
+  "type": "object",
+  "properties": {
+    "repository": {
+      "type": "object",
+      "properties": {
+        "issue": {
+          "type": "object",
+          "properties": {
+            "url": { "type": "string" },
+            "number": { "type": "integer" },
+            "title": { "type": "string" },
+            "body": { "type": "string" },
+            "assignees": {
+              "type": "object",
+              "properties": {
+                "nodes": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "login": { "type": "string" }
+                    },
+                    "required": ["login"]
+                  }
+                }
+              },
+              "required": ["nodes"]
+            },
+            "labels": {
+              "type": "object",
+              "properties": {
+                "nodes": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "name": { "type": "string" },
+                      "color": { "type": "string" }
+                    },
+                    "required": ["name", "color"]
+                  }
+                }
+              },
+              "required": ["nodes"]
+            },
+            "projectItems": {
+              "type": "object",
+              "properties": {
+                "nodes": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "fieldValues": {
+                        "type": "object",
+                        "properties": {
+                          "nodes": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "text": { "type": "string" },
+                                "name": { "type": "string" },
+                                "field": {
+                                  "type": "object",
+                                  "properties": {
+                                    "name": { "type": "string" }
+                                  },
+                                  "required": ["name"]
+                                }
+                              },
+                              "required": []
+                            }
+                          }
+                        },
+                        "required": ["nodes"]
+                      }
+                    },
+                    "required": ["fieldValues"]
+                  }
+                }
+              },
+              "required": ["nodes"]
+            }
+          },
+          "required": ["title", "body", "assignees", "labels", "projectItems"]
+        }
+      },
+      "required": ["issue"]
+    }
+  },
+  "required": ["repository"]
+}
