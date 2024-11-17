@@ -8,8 +8,6 @@ on:
     paths:
       - "release/*"
   workflow_dispatch:
-    branches:
-      - "release/*"
 
 jobs:
   release:
@@ -20,8 +18,11 @@ jobs:
         run: |
           BRANCH_NAME="${GITHUB_REF##*/}"
           if [[ ! "$BRANCH_NAME" =~ ^release/ ]]; then
-            echo "This workflow can only be triggered from a release branch (release/*)."
-            exit 1
+            echo "This workflow can only be triggered from a release branch (release/*). Current branch: $BRANCH_NAME."
+            # If the workflow was manually triggered, allow it to run
+            if [[ "${GITHUB_EVENT_NAME}" != "workflow_dispatch" ]]; then
+              exit 1
+            fi
           fi
 
       - name: Checkout code
