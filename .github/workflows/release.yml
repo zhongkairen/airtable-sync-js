@@ -20,6 +20,8 @@ jobs:
       - name: Check if the branch is a release branch
         run: |
           BRANCH_NAME="${GITHUB_REF##*/}"
+          echo "Current branch: $BRANCH_NAME"
+          echo "Event name: ${GITHUB_EVENT_NAME}"
           if [[ ! "$BRANCH_NAME" =~ ^release/ ]]; then
             echo "This workflow can only be triggered from a release branch (release/*). Current branch: $BRANCH_NAME."
             # If the workflow was manually triggered, allow it to run
