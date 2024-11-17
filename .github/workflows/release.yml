@@ -45,6 +45,8 @@ jobs:
         run: |
           VERSION_IN_TAG=${GITHUB_REF#refs/tags/}
           VERSION_IN_PACKAGE_JSON=$(node -p "require('./package.json').version")
+          echo "VERSION_IN_PACKAGE_JSON=$VERSION_IN_PACKAGE_JSON" >> $GITHUB_ENV
+
           if [ "$VERSION_IN_TAG" != "$VERSION_IN_PACKAGE_JSON" ]; then
             echo "Error: Tag version $VERSION_IN_TAG does not match package.json version $VERSION_IN_PACKAGE_JSON"
             if [[ "${GITHUB_EVENT_NAME}" != "workflow_dispatch" ]]; then
@@ -72,16 +74,16 @@ jobs:
         if: github.event_name == 'workflow_dispatch'
         run: |
           echo "Dry run: Skipping the actual release process."
-          echo "Would have created release for version $VERSION_IN_TAG."
-          echo "Release body:"
-          cat changelog.txt
-          echo "Release name: Release $VERSION_IN_TAG"
+          echo "files: dist/airtable-sync-js-$VERSION_IN_PACKAGE_JSON.tgz"
+          echo "name: Release $VERSION_IN_PACKAGE_JSON"
+          echo "body: ${{ steps.prepare_body.outputs.notes }}"
+          cat CHANGELOG.md
 
       # Step to create release and upload assets (normal run)
       - name: Create Release and Upload Assets
         if: github.event_name != 'workflow_dispatch' # Only run this for PR merges
         uses: softprops/action-gh-release@v1
         with:
-          files: dist/airtable-sync-js-${{ github.ref_name }}.tar.gz
-          name: Release ${{ github.ref_name }}
+          files: dist/airtable-sync-js-$VERSION_IN_PACKAGE_JSON.tgz
+          name: Release $VERSION_IN_PACKAGE_JSON
           body: ${{ steps.prepare_body.outputs.notes }}
