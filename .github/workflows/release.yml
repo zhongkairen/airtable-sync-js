@@ -50,7 +50,8 @@ jobs:
 
           if [[ ! "$GITHUB_REF" =~ ^refs/tags/ ]]; then
             echo "No tag is associated with this commit."
-            exit 0
+            git fetch --tags
+            VERSION_IN_TAG=$(git describe --tags $(git rev-list --tags --max-count=1))
           else
             VERSION_IN_TAG=${GITHUB_REF#refs/tags/}
           fi
@@ -62,6 +63,7 @@ jobs:
             fi
           else
             echo "Version match successful: $VERSION_IN_TAG"
+            echo "TAG=$VERSION_IN_TAG" >> $GITHUB_ENV
           fi
 
       - name: Build and package
@@ -94,6 +96,7 @@ jobs:
         if: github.event_name != 'workflow_dispatch' # Only run this for PR merges
         uses: softprops/action-gh-release@v1
         with:
+          tag_name: ${{ env.TAG }}
           files: dist/airtable-sync-js-$VERSION_IN_PACKAGE_JSON.tgz
           name: Release $VERSION_IN_PACKAGE_JSON
           body_path: release_notes.txt
