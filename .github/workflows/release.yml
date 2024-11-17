@@ -21,7 +21,7 @@ jobs:
     steps:
       - name: Check if the branch is a release branch
         run: |
-          BRANCH_NAME="${GITHUB_REF##*/}"
+          BRANCH_NAME="${GITHUB_REF#refs/heads/}"
           echo "Current branch: $BRANCH_NAME"
           echo "Event name: ${GITHUB_EVENT_NAME}"
           if [[ ! "$BRANCH_NAME" =~ ^release/ ]]; then
