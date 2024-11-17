@@ -73,14 +73,8 @@ jobs:
         id: prepare_body
         run: |
           # Extract the multi-line changes under the version section
-          cp .github/workflows/extract-changes.pl extract-changes.pl
-          chmod +x extract-changes.pl
-
           # example: ## [v1.0.0] until the next ## section or EOF
-          RELEASE_NOTES=$(./extract-changes.pl "$VERSION_IN_PACKAGE_JSON")
-
-          # Set the environment variable for the next steps
-          echo "RELEASE_NOTES=$RELEASE_NOTES" >> $GITHUB_ENV
+          perl .github/workflows/extract-changes.pl "$VERSION_IN_PACKAGE_JSON" > release_notes.txt
 
       # Conditional step for dry run if manually triggered
       - name: Dry run release if manually triggered
@@ -89,7 +83,7 @@ jobs:
           echo "Dry run: Skipping the actual release process."
           echo "files: dist/airtable-sync-js-$VERSION_IN_PACKAGE_JSON.tgz"
           echo "name: Release v$VERSION_IN_PACKAGE_JSON"
-          echo "body: $RELEASE_NOTES"
+          echo "body: $(cat release_notes.txt)"
           echo
           echo "cat CHANGELOG.md"
           cat CHANGELOG.md
@@ -101,4 +95,13 @@ jobs:
         with:
           files: dist/airtable-sync-js-$VERSION_IN_PACKAGE_JSON.tgz
           name: Release $VERSION_IN_PACKAGE_JSON
-          body: $RELEASE_NOTES
+          body_path: release_notes.txt
+
+      - name: Upload artifacts
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-files
+          path: |
+            release_notes.txt
+            dist/airtable-sync-js-${{ env.VERSION_IN_PACKAGE_JSON }}.tgz
