@@ -7,6 +7,9 @@ on:
       - main
     paths:
       - "release/*"
+  push:
+    branches:
+      - ci/release-wf'
   workflow_dispatch:
 
 jobs:
