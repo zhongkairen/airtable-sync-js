@@ -65,7 +65,7 @@ jobs:
         run: |
           npm run build-and-pack
           echo "Listing the generated package zip file:"
-          ls -lh dist/airtable-sync-js-${{ github.ref_name }}.tar.gz
+          ls -lh dist/airtable-sync-js-*.tgz
 
       # Conditional step for dry run if manually triggered
       - name: Dry run release if manually triggered
