@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "docUrl": "https://github.com/zhongkairen/airtable-sync-js/blob/main/doc/config-json.md",
+  "doc": "doc/config-json.md",
 
   "_comment": "This is an example configuration",
 
