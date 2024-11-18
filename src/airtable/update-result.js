@@ -38,6 +38,8 @@ class UpdateResult {
   }
 
   get summary() {
+    if (this.length === 0) return 'no changes';
+
     const result = [];
     if (this.updated.length > 0) {
       result.push(`updated: ${this.updated.length}`);
@@ -71,6 +73,11 @@ class UpdateResult {
       .join('\n');
   }
 
+  /**
+   * Add an outcome of an updated record to the update result based on the status
+   * @param {object} context
+   * @param {string} status
+   */
   addRecordStatus(context, status) {
     this.result[status].push(context);
   }

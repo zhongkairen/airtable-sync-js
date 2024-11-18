@@ -159,6 +159,11 @@ class AirtableClient {
     return this.records.filter((record) => record.repoName === this.currentRepo);
   }
 
+  /**
+   * Prepare the synchronization process between Airtable and GitHub}
+   * @param {object} updatedRecord - The updated record
+   * @param {UpdateResult} syncResult - The result of the update operation
+   */
   #handleUpdatedRecord(updatedRecord, syncResult) {
     const recordId = updatedRecord.id;
     const record = this.findRecordById(recordId);
@@ -188,7 +193,6 @@ class AirtableClient {
       error,
     };
     syncResult.addRecordStatus(context, status);
-    return syncResult;
   }
 }
 
