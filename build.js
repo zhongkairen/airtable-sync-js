@@ -15,9 +15,7 @@ async function copyFileEnsureDir(srcFile, destFile) {
 
 async function copyFiles(srcFiles, destDir) {
   const copyPromises = srcFiles.map(async (srcFile) => {
-    const stripDir = srcFile.startsWith('src') ? 'src' : '.';
-    const relPath = path.relative(stripDir, srcFile);
-    const dstFile = path.join(destDir, relPath);
+    const dstFile = path.join(destDir, srcFile);
     await copyFileEnsureDir(srcFile, dstFile);
   });
 
@@ -48,7 +46,7 @@ async function build(buildDir) {
   // Run esbuild with all files found by glob
   await esbuild.build({
     entryPoints: jsFiles,
-    outdir: buildDir,
+    outdir: path.join(buildDir, 'src'),
     minify: true,
     sourcemap: false, // no map files, thank you
   });
