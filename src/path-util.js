@@ -17,13 +17,16 @@ const graphql = path.join(
 const cwd = process.cwd();
 
 class PathUtil {
+  static packageRoot = packageRoot;
+  static cwd = cwd;
+
   static get dir() {
     return {
       home,
-      packageRoot,
+      packageRoot: PathUtil.packageRoot,
       test,
       graphql,
-      cwd,
+      cwd: PathUtil.cwd,
     };
   }
 

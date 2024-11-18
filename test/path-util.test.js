@@ -4,6 +4,8 @@ import { homedir } from 'os';
 import { fileURLToPath } from 'url';
 import { PathUtil, $path } from '../src/path-util.js';
 import exp from 'constants';
+import { execSync } from 'child_process';
+import fs from 'fs';
 
 describe('PathUtil', () => {
   const testDir = path.dirname(fileURLToPath(import.meta.url));
@@ -79,7 +81,21 @@ describe('PathUtil', () => {
   describe('file', () => {
     it('should have correct config.json', () => {
       const expectedPath = makePath('config.json');
+      const configFileExists = fs.existsSync(expectedPath);
+      if (!configFileExists) execSync('touch ' + expectedPath);
       expect(PathUtil.file.configJson).to.equal(expectedPath);
+      if (!configFileExists) execSync('rm ' + expectedPath);
+    });
+
+    it('should throw if config.json missing', () => {
+      const { cwd, packageRoot } = PathUtil.dir;
+      // Set the values to non-existing directories
+      PathUtil.cwd = 'non-existing-dir';
+      PathUtil.packageRoot = 'non-existing-dir';
+      expect(() => PathUtil.file.configJson).to.throw(Error, /config.json not found/);
+      // Reset the values
+      PathUtil.cwd = cwd;
+      PathUtil.packageRoot = packageRoot;
     });
   });
 
