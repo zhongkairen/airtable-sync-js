@@ -4,7 +4,7 @@
   "main": "index.js",
   "type": "module",
   "bin": {
-    "airtable-sync": "./index.js"
+    "airtable-sync": "./src/index.js"
   },
   "scripts": {
     "build": "node build.js dist",
