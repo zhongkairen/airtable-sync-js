@@ -55,8 +55,9 @@ async function build(buildDir) {
 
   // Copy other files
   const graphqlFiles = await glob('src/**/graphql/*.graphql');
-  const packageFiles = ['package.json', 'README.md', 'CHANGELOG.md'];
-  const otherFiles = [...graphqlFiles, ...packageFiles];
+  const docFiles = await glob('doc/*.md');
+  const packageFiles = ['package.json', 'README.md', 'CHANGELOG.md', 'example.config.json'];
+  const otherFiles = [...graphqlFiles, ...packageFiles, ...docFiles];
   await copyFiles(otherFiles, buildDir);
   console.log('Copying other files...', otherFiles);
 

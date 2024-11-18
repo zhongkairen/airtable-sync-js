@@ -1,26 +1,49 @@
 {
-  "_comment.airtable": "This is an example configuration",
+  "version": "1.0.0",
+  "doc": "doc/config-json.md",
+
+  "_comment": "This is an example configuration",
+
   "airtable": {
+    "_comment.baseId": "Base ID of the airtable",
     "baseId": "appA1B2CDE5F6G7H8<your airtable base id>",
+
+    "_comment.tableId": "table ID, optional if tableName is provided",
     "tableId": "tblI9J0K1L2M3N4c6<your airtable table id>",
-    "_comment.viewName": "optional viewName in the table",
+
+    "_comment.tableName": "table name, optional if tableId is provided",
+    "tableName": "airtable-sync",
+
+    "_comment.viewName": "optional view name in the table",
     "viewName": "Your team view",
+
     "_comment.token": "optional access token (fallback to AIRTABLE_TOKEN env)",
     "token": "patEzF45bYN4571Oh.<your airtable token>",
+
     "_comment.tokenPath": "optional token path (fallback to AIRTABLE_TOKEN_PATH env)",
     "tokenPath": "/path/to/airtable_token"
   },
+
   "github": {
-    "owner": "Your-Organization",
-    "repo": "your-team-repo",
-    "project": "Your Team Project",
+    "_comment.repoOwner": "Organization or GitHub user name",
+    "repoOwner": "Your-Organization",
+
+    "_comment.repoName": "Repository name",
+    "repoName": "your-team-repo",
+
+    "_comment.projectName": "Project name that associated with the issues to sync",
+    "projectName": "Your Team Project",
+
     "_comment.fieldMap": "mapping from github field to airtable field",
     "fieldMap": {
+      "_comment.fields": "Example fields to sync, left is github field name, right is airtable field name",
       "Start Date": "Engineering Start Date",
       "Delivery Date": "Engineering Delivery Date"
     },
+
     "_comment.token": "optional access token (fallback to GITHUB_TOKEN env)",
     "token": "ghp_42m57hH6FX6<your github token>",
+
     "_comment.tokenPath": "optional token path (fallback to GITHUB_TOKEN_PATH env)",
     "tokenPath": "/path/to/github_token"
   }
