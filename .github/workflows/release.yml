@@ -7,9 +7,11 @@ on:
       - main
     paths:
       - "release/*"
+
+  # manual triggering and push from ci/release-wf branch for debugging
   push:
     branches:
-      - ci/release-wf'
+      - ci/release-wf
   workflow_dispatch:
 
 jobs:
@@ -19,13 +21,13 @@ jobs:
     steps:
       - name: Check if the branch is a release branch
         run: |
-          BRANCH_NAME="${GITHUB_REF##*/}"
+          BRANCH_NAME="${GITHUB_REF#refs/heads/}"
           echo "Current branch: $BRANCH_NAME"
           echo "Event name: ${GITHUB_EVENT_NAME}"
           if [[ ! "$BRANCH_NAME" =~ ^release/ ]]; then
             echo "This workflow can only be triggered from a release branch (release/*). Current branch: $BRANCH_NAME."
             # If the workflow was manually triggered, allow it to run
-            if [[ "${GITHUB_EVENT_NAME}" != "workflow_dispatch" ]]; then
+            if [[ "${GITHUB_EVENT_NAME}" != "workflow_dispatch" ]] && [[ "$BRANCH_NAME" != "ci/release-wf" ]]; then
               exit 1
             fi
           fi
@@ -43,26 +45,27 @@ jobs:
 
       - name: Verify version matches the tag
         run: |
-          VERSION_IN_TAG=${GITHUB_REF#refs/tags/}
           VERSION_IN_PACKAGE_JSON=$(node -p "require('./package.json').version")
           echo "VERSION_IN_PACKAGE_JSON=$VERSION_IN_PACKAGE_JSON" >> $GITHUB_ENV
 
-          if [ "$VERSION_IN_TAG" != "$VERSION_IN_PACKAGE_JSON" ]; then
+          if [[ ! "$GITHUB_REF" =~ ^refs/tags/ ]]; then
+            echo "No tag is associated with this commit."
+            git fetch --tags
+            VERSION_IN_TAG=$(git describe --tags $(git rev-list --tags --max-count=1))
+          else
+            VERSION_IN_TAG=${GITHUB_REF#refs/tags/}
+          fi
+
+          if [ "$VERSION_IN_TAG" != "v$VERSION_IN_PACKAGE_JSON" ]; then
             echo "Error: Tag version $VERSION_IN_TAG does not match package.json version $VERSION_IN_PACKAGE_JSON"
             if [[ "${GITHUB_EVENT_NAME}" != "workflow_dispatch" ]]; then
               exit 1
             fi
           else
             echo "Version match successful: $VERSION_IN_TAG"
+            echo "TAG=$VERSION_IN_TAG" >> $GITHUB_ENV
           fi
 
-      - name: Dry run release if manually triggered
-        if: github.event_name == 'workflow_dispatch'
-        run: |
-          echo "Dry run: Skipping the actual release process."
-          echo "Would have created release for version $VERSION_IN_TAG and uploaded assets."
-
-      # Build and package step (normal run)
       - name: Build and package
         run: |
           npm run build-and-pack
@@ -93,9 +96,11 @@ jobs:
         if: github.event_name != 'workflow_dispatch' # Only run this for PR merges
         uses: softprops/action-gh-release@v1
         with:
-          files: dist/airtable-sync-js-$VERSION_IN_PACKAGE_JSON.tgz
-          name: Release $VERSION_IN_PACKAGE_JSON
+          tag_name: ${{ env.TAG }}
+          files: dist/airtable-sync-js-${{ env.VERSION_IN_PACKAGE_JSON }}.tgz
+          name: Release ${{ env.VERSION_IN_PACKAGE_JSON }}
           body_path: release_notes.txt
+          token: ${{ secrets.RELEASE_TOKEN }}
 
       - name: Upload artifacts
         if: github.event_name == 'workflow_dispatch'

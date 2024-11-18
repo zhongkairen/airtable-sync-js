@@ -4,7 +4,6 @@ use strict;
 use warnings;
 
 # Extracting changes for version, e.g., for v1.0.0 the arg should be without the 'v' prefix
-
 my $VERSION_IN_TAG = 'v' . $ARGV[0];
 
 # Open the CHANGELOG.md file
