@@ -2,16 +2,11 @@ name: Make a new release
 
 # When a release branch is merged to main, run the release job
 on:
-  pull_request:
-    branches:
-      - main
-    paths:
-      - "release/*"
+  # Trigger the release job when a new_release event is dispatched
+  repository_dispatch:
+    types: [new_release]
 
-  # manual triggering and push from ci/release-wf branch for debugging
-  push:
-    branches:
-      - ci/release-wf
+  # manual triggering for debugging
   workflow_dispatch:
 
 jobs:
@@ -20,17 +15,21 @@ jobs:
 
     steps:
       - name: Check if the branch is a release branch
-        run: |
-          BRANCH_NAME="${GITHUB_REF#refs/heads/}"
-          echo "Current branch: $BRANCH_NAME"
-          echo "Event name: ${GITHUB_EVENT_NAME}"
-          if [[ ! "$BRANCH_NAME" =~ ^release/ ]]; then
-            echo "This workflow can only be triggered from a release branch (release/*). Current branch: $BRANCH_NAME."
-            # If the workflow was manually triggered, allow it to run
-            if [[ "${GITHUB_EVENT_NAME}" != "workflow_dispatch" ]] && [[ "$BRANCH_NAME" != "ci/release-wf" ]]; then
-              exit 1
-            fi
-          fi
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { prNumber, prTitle, branch } = github.event.client_payload;
+            console.log(`PR Number: ${prNumber}`);
+            console.log(`PR Title: ${prTitle}`);
+            console.log(`Branch: ${branch}`);
+            if (!branch.startsWith('release/')) {
+              console.log("This workflow can only be triggered from a release branch (release/*).");
+              // If manually triggered, allow the workflow to continue
+              if (github.event_name !== 'workflow_dispatch') {
+                // Fail the step if it's not a valid branch and not manually triggered
+                core.setFailed("The PR does not originate from a valid release branch.");
+              }
+            }
 
       - name: Checkout code
         uses: actions/checkout@v4
