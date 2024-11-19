@@ -14,6 +14,14 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
+            // Fetch remote tags for debugging
+            const { data: remoteTags } = await github.rest.repos.listTags({
+              owner: context.repo.owner,
+              repo: context.repo.repo
+            });
+            console.log(remoteTags);
+
+            // Fire a new_release event to trigger the release job
             const response = await github.rest.repos.createDispatchEvent({
               owner: context.repo.owner,
               repo: context.repo.repo,
