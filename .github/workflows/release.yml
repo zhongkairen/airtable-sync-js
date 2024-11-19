@@ -18,7 +18,7 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const { prNumber, prTitle, branch } = github.event.client_payload;
+            const { prNumber, prTitle, branch } = context.payload.client_payload;
             console.log(`PR Number: ${prNumber}`);
             console.log(`PR Title: ${prTitle}`);
             console.log(`Branch: ${branch}`);
