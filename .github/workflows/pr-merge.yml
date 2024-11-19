@@ -18,7 +18,7 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               event_type: 'new_release',
-              payload: {
+              client_payload: {
                 prNumber: context.payload.pull_request?.number,
                 prTitle: context.payload.pull_request?.title,
                 branch: github.head_ref,
