@@ -5,8 +5,13 @@ name: CI - unit tests
 
 on:
   pull_request:
-    branches-ignore:
-      - "ci/*"
+    paths-ignore:
+      - "docs/**"
+      - ".github/**"
+      - "README.md"
+      - "CHANGELOG.md"
+      - ".gitignore"
+      - ".prettierrc*"
 
 jobs:
   build:
