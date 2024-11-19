@@ -111,7 +111,9 @@ jobs:
             dist/airtable-sync-js-${{ env.VERSION_IN_PACKAGE_JSON }}.tgz
 
       - name: Authenticate with GitHub Packages
-        run: echo "//npm.pkg.github.com/:_authToken=${{ secrets.RELEASE_TOKEN }}" > ~/.npmrc
+        run: |
+          echo "//npm.pkg.github.com/:_authToken=${{ secrets.RELEASE_TOKEN }}" > ~/.npmrc
+          echo "registry=https://npm.pkg.github.com" >> ~/.npmrc
 
       - name: Publish Package
         run: npm publish
