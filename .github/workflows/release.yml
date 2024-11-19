@@ -42,11 +42,22 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Get package info
+        uses: actions/github-script@v7
+        id: package_info
+        with:
+          script: |
+            const packageJson = require('./package.json');
+            const { version, name } = packageJson;
+            const packageFilePrefix = name.replace(/@/g, '').replace(/\//g, '-');
+            const packageFilePath = `dist/${packageFilePrefix}-${version}.tgz`;
+            const packageWildcardPath = `dist/${packageFilePrefix}-*.tgz`;
+            core.setEnv('PACKAGE_VERSION', version);
+            core.setEnv('PACKAGE_PATH', packageFilePath);
+            core.setEnv('PACKAGE_WC_PATH', packageWildcardPath);
+
       - name: Verify version matches the tag
         run: |
-          VERSION_IN_PACKAGE_JSON=$(node -p "require('./package.json').version")
-          echo "VERSION_IN_PACKAGE_JSON=$VERSION_IN_PACKAGE_JSON" >> $GITHUB_ENV
-
           if [[ ! "$GITHUB_REF" =~ ^refs/tags/ ]]; then
             echo "No tag is associated with this commit."
             git fetch --tags
@@ -55,7 +66,7 @@ jobs:
             VERSION_IN_TAG=${GITHUB_REF#refs/tags/}
           fi
 
-          if [ "$VERSION_IN_TAG" != "v$VERSION_IN_PACKAGE_JSON" ]; then
+          if [ "$VERSION_IN_TAG" != "v$PACKAGE_VERSION" ]; then
             echo "Error: Tag version $VERSION_IN_TAG does not match package.json version $VERSION_IN_PACKAGE_JSON"
             if [[ "${GITHUB_EVENT_NAME}" != "workflow_dispatch" ]]; then
               exit 1
@@ -69,22 +80,22 @@ jobs:
         run: |
           npm run build-and-pack
           echo "Listing the generated package zip file:"
-          ls -lh dist/airtable-sync-js-*.tgz
+          ls -lh $PACKAGE_WC_PATH
 
       - name: Extract changes from changelog for the corresponding version
         id: prepare_body
         run: |
           # Extract the multi-line changes under the version section
           # example: ## [v1.0.0] until the next ## section or EOF
-          perl .github/workflows/extract-changes.pl "$VERSION_IN_PACKAGE_JSON" > release_notes.txt
+          perl .github/workflows/extract-changes.pl "$PACKAGE_VERSION" > release_notes.txt
 
       # Conditional step for dry run if manually triggered
       - name: Dry run release if manually triggered
         if: github.event_name == 'workflow_dispatch'
         run: |
           echo "Dry run: Skipping the actual release process."
-          echo "files: dist/airtable-sync-js-$VERSION_IN_PACKAGE_JSON.tgz"
-          echo "name: Release v$VERSION_IN_PACKAGE_JSON"
+          echo "files: $PACKAGE_PATH"
+          echo "name: Release v$PACKAGE_VERSION"
           echo "body: $(cat release_notes.txt)"
           echo
           echo "cat CHANGELOG.md"
@@ -96,8 +107,8 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ env.TAG }}
-          files: dist/airtable-sync-js-${{ env.VERSION_IN_PACKAGE_JSON }}.tgz
-          name: Release ${{ env.VERSION_IN_PACKAGE_JSON }}
+          files: ${{ env.PACKAGE_PATH }}
+          name: Release ${{ env.PACKAGE_VERSION }}
           body_path: release_notes.txt
           token: ${{ secrets.RELEASE_TOKEN }}
 
@@ -108,7 +119,7 @@ jobs:
           name: release-files
           path: |
             release_notes.txt
-            dist/airtable-sync-js-${{ env.VERSION_IN_PACKAGE_JSON }}.tgz
+            ${{ env.PACKAGE_PATH }}
 
       - name: Authenticate with GitHub Packages
         run: |
