@@ -127,4 +127,4 @@ jobs:
           echo "registry=https://npm.pkg.github.com" >> ~/.npmrc
 
       - name: Publish Package
-        run: npm publish
+        run: npm publish --access public
