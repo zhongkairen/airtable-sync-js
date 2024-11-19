@@ -1,0 +1,26 @@
+name: Debug - release event trigger
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - ci/release-trigger
+
+jobs:
+  check-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger release event
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const response = await github.rest.repos.createDispatchEvent({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              event_type: 'new_release',
+              client_payload: {
+                prNumber: 999,
+                prTitle: 'Test PR',
+                branch: 'release/1.0.1',
+              }
+            });
