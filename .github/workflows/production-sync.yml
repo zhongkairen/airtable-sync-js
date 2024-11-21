@@ -17,8 +17,8 @@ jobs:
 
       - name: Set up npmrc
         run: |
-          echo "@zhongkairen:registry=https://npm.pkg.github.com" >> ~/.npmrc
-          echo "//npm.pkg.github.com/:_authToken=${{ secrets.GH_PKG_READ_TOKEN }}" > ~/.npmrc
+          echo "@zhongkairen:registry=https://npm.pkg.github.com" >> .npmrc
+          echo "//npm.pkg.github.com/:_authToken=${{ secrets.GH_PKG_READ_TOKEN }}" > .npmrc
 
       - name: Get latest version of airtable-sync-js
         id: get_version
