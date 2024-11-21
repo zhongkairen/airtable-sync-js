@@ -1,0 +1,75 @@
+name: Production sync
+# Regularly sync using the latest released package and will trigger status badge update
+on:
+  schedule:
+    - cron: "23 2 * * *" # nightly at 2:23 AM UTC
+  workflow_dispatch: # Enables manual trigger
+
+jobs:
+  run-prd-sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Get latest version of airtable-sync-js
+        id: get_version
+        run: |
+          VERSION=$(npm show @zhongkairen/airtable-sync-js version)
+          echo "::set-output name=version::$VERSION"
+
+      - name: Cache airtable-sync-js package
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm/_cacache
+          key: ${{ runner.os }}-npm-airtable-sync-js-${{ steps.get_version.outputs.version }}
+
+      - name: Install latest package
+        run: |
+          echo "@zhongkairen:registry=https://npm.pkg.github.com" >> ~/.npmrc
+          echo "//npm.pkg.github.com/:_authToken=${{ secrets.GH_PKG_READ_TOKEN }}" > ~/.npmrc
+          npm install @zhongkairen/airtable-sync-js
+
+      - name: Download config file
+        run: |
+          gist_id="9c4a16b2a8bd124fc3837d8cecfafe28"
+          file_name="production-sync.config.json"
+          url="https://gist.githubusercontent.com/${{ github.repository_owner }}/${gist_id}/raw/${file_name}"
+          curl -o config.json $url
+          cat config.json
+
+      - name: Run Airtable sync
+        id: run-airtable-sync
+        env:
+          GITHUB_TOKEN: ${{ secrets.AIRSYNC_GITHUB_TOKEN }}
+          AIRTABLE_TOKEN: ${{ secrets.AIRSYNC_AIRTABLE_TOKEN }}
+        run: |
+          ls -lh ./config.json
+          cat ./config.json
+          pwd
+
+          npx airtable-sync-js -v
+
+      - name: Update status
+        if: always() # Ensures this runs even if previous steps fail
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const syncSucceeded = '${{ steps.run-airtable-sync.outcome }}' === 'success';
+            const status = syncSucceeded ? 'synced' : 'failed';
+            const timestamp = new Date().toISOString();
+
+            const response = await github.rest.repos.createDispatchEvent({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              event_type: 'sync_status_update',
+              client_payload: {
+                status: status,
+                timestamp: timestamp,
+              },
+            });
+
+            console.log(`Status updated: \n${JSON.stringify(response, null, 2)}`);
