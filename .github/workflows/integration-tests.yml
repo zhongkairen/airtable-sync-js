@@ -6,7 +6,7 @@ name: CI - integration tests
 on:
   pull_request:
     paths-ignore:
-      - "docs/**"
+      - "doc/**"
       - ".github/**"
       - "README.md"
       - "CHANGELOG.md"
