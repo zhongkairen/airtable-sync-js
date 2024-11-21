@@ -24,13 +24,13 @@ jobs:
         id: get_version
         run: |
           VERSION=$(npm show @zhongkairen/airtable-sync-js version)
-          echo "::set-output name=version::$VERSION"
+          echo "version=$VERSION" >> $GITHUB_ENV
 
       - name: Cache airtable-sync-js package
         uses: actions/cache@v4
         with:
           path: ~/.npm/_cacache
-          key: ${{ runner.os }}-npm-airtable-sync-js-${{ steps.get_version.outputs.version }}
+          key: ${{ runner.os }}-npm-airtable-sync-js-${{ env.version }}
 
       - name: Install latest package
         run: |
