@@ -27,7 +27,7 @@ jobs:
           echo "::set-output name=version::$VERSION"
 
       - name: Cache airtable-sync-js package
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.npm/_cacache
           key: ${{ runner.os }}-npm-airtable-sync-js-${{ steps.get_version.outputs.version }}
