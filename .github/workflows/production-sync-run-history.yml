@@ -1,0 +1,33 @@
+name: production sync run history
+on:
+  # schedule:
+  #   - cron: "0 0 * * *"
+  workflow_dispatch: # Enables manual trigger
+
+jobs:
+  run-script:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: |
+          npm ci
+
+      - name: Run workflowRunHistory
+        env:
+          GITHUB_AIRTABLE_SYNC_READONLY_ACTION_TOKEN: ${{ secrets.AIRTABLE_SYNC_READONLY_ACTION_TOKEN }}
+          GITHUB_AIRTABLE_SYNC_GIST_TOKEN: ${{ secrets.AIRTABLE_SYNC_GIST_TOKEN }}
+        run: |
+          owner="${{ github.repository_owner }}"
+          repo="${{ github.event.repository.name }}"
+          workflow_id=129168253
+          echo "Repo Owner: $owner"
+          echo "Repo Name: $repo"
+          node .github/workflows/workflowRunHistory.js --owner $owner --repo $repo --id $workflow_id
