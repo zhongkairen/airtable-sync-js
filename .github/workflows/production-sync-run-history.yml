@@ -1,7 +1,7 @@
 name: production sync run history
 on:
-  # schedule:
-  #   - cron: "0 0 * * *"
+  schedule:
+    - cron: "37 3 * * *"
   workflow_dispatch: # Enables manual trigger
 
 jobs:
@@ -28,6 +28,4 @@ jobs:
           owner="${{ github.repository_owner }}"
           repo="${{ github.event.repository.name }}"
           workflow_id=129168253
-          echo "Repo Owner: $owner"
-          echo "Repo Name: $repo"
           node .github/workflows/workflowRunHistory.js --owner $owner --repo $repo --id $workflow_id
