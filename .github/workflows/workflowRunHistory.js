@@ -1,7 +1,7 @@
 /**
  * npm install axios unzipper yargs cli-progress
  * node workflowRunHistory.js --owner=myusername --repo=myrepo --id=123456
- * --id: GitHub workflow ID, e.g. 122549153
+ * --id: GitHub workflow ID, e.g. 129168253
  *       How to get the workflow ID:
  *         curl -H "Authorization: token YOUR_GITHUB_TOKEN" \
  *         https://api.github.com/repos/WNER/REPO/actions/workflows
@@ -31,11 +31,17 @@ class WorkflowRunHistory {
     this.workflowId = workflowId;
   }
 
+  #csvFile;
+
+  get history() {
+    return this.#csvFile.history;
+  }
+
   async fetchWorkflowRuns() {
     await this.#fetchExistingHistory();
     const historyEntries = await this.#fetchNewWorkflowRuns();
-    this._csv.addToHistory(historyEntries);
-    await this._csv.write();
+    this.#csvFile.addToHistory(historyEntries);
+    await this.#csvFile.write();
   }
 
   async fetchWorkflows() {
@@ -53,8 +59,8 @@ class WorkflowRunHistory {
     const id = 'fc2f1cc930249c70644310e7255cc549';
     const fileName = 'airtable-sync-js.run-history.csv';
     const gist = { id, fileName, token: this.gistToken, owner: this.owner };
-    this._csv ??= new CsvFile(gist);
-    await this._csv.read();
+    this.#csvFile ??= new CsvFile(gist);
+    await this.#csvFile.read();
   }
 
   async #fetchNewWorkflowRuns() {
@@ -70,12 +76,7 @@ class WorkflowRunHistory {
     );
     progressBar.start(runsNotInHistory.length, 0);
 
-    // console.log('Fetching new runs...');
-    console.debug(` - Runs not in history: ${runsNotInHistory.length}`);
-
     const historyEntries = await this.#fetchWorkflowRunsData(runsNotInHistory, progressBar);
-
-    console.debug(`new history: ${historyEntries.length}`);
 
     progressBar.stop();
     return historyEntries;
@@ -92,9 +93,13 @@ class WorkflowRunHistory {
 
     const workflow_runs = response.data.workflow_runs || [];
     // Filter out runs already in history
-    const runsNotInHistory = workflow_runs.filter((run) => !this._csv.isInHistory(run.run_number));
+    const runsNotInHistory = workflow_runs.filter(
+      (run) => !this.#csvFile.isInHistory(run.run_number)
+    );
     if (runsNotInHistory.length === 0) {
-      console.log(`No new runs to process, first run number: ${this._csv.history[0].runNumber}`);
+      console.log(
+        `No new runs to process, first run number: ${this.#csvFile.history[0].runNumber}`
+      );
     }
 
     return runsNotInHistory;
@@ -103,13 +108,9 @@ class WorkflowRunHistory {
   async #fetchWorkflowRunsData(runs, progressBar) {
     const tasks = runs
       .filter(({ status }) => status === 'completed')
-      .map(({ id: runId, run_number }) => this.#fetchRunStatus(runId, progressBar, run_number));
-
-    console.debug(`tasks: ${tasks.length}`);
+      .map(({ id: runId }) => this.#fetchRunStatus(runId, progressBar));
 
     const statusDataset = await Promise.all(tasks);
-
-    console.debug(`statusDataset: ${statusDataset.length}`);
 
     return statusDataset
       .sort((a, b) => b.json.runNumber - a.json.runNumber)
@@ -152,25 +153,19 @@ class WorkflowRunHistory {
     }
   }
 
-  async #fetchRunStatus(runId, progressBar, run_number) {
-    const json = await this.#getRunStatusInLogs(runId, run_number);
-    console.debug(`fetchRunStatus: ${runId}, ${run_number} - ${JSON.stringify(json)}`);
+  async #fetchRunStatus(runId, progressBar) {
+    const json = await this.#getRunStatusInLogs(runId);
     progressBar.increment();
     return { runId, json };
   }
 
-  async #getRunStatusInLogs(runId, run_number) {
+  async #getRunStatusInLogs(runId) {
     const url = `/actions/runs/${runId}/logs`;
-    console.debug(`Fetching run status: ${runId}`);
     const response = await this.#doRequest(url, true);
-
-    // console.debug(`Fetching run status: ${runId}, response: ${response.status}`);
 
     if (response.status === 200) {
       const zipStream = response.data;
-      // console.debug(`Fetching run status: ${runId}, response 200`);
       const jsonData = await this.#extractJsonData(zipStream, runId);
-      // console.debug(`Fetching run status: ${runId}, ${run_number} - ${JSON.stringify(jsonData)}`);
       return jsonData;
     }
   }
@@ -184,7 +179,6 @@ class WorkflowRunHistory {
       unzipStream
         .on('entry', (entry) => {
           if (entry.path.match(jobLogFilename)) {
-            console.debug(`Processing entry: ${runId} ${entry.path}`);
             let data = '';
             // Accumulate data from the entry stream
             entry
@@ -194,10 +188,8 @@ class WorkflowRunHistory {
               .on('end', () => {
                 const match = data.match(jsonPattern);
                 if (match) {
-                  // console.debug(`found json string !!>>> ${match[1]} <<<`);
                   try {
                     const result = JSON.parse(match[1]);
-                    // console.debug(`Processed json !!`);
                     resolve(result);
                   } catch (error) {
                     console.error(`JSON parsing failed for ${entry.path}: ${match[1]}`, error);
@@ -206,7 +198,6 @@ class WorkflowRunHistory {
                 }
               });
           } else {
-            // console.debug(`Skipping entry: ${entry.path}`);
             entry.autodrain(); // Drain non-matching entries
           }
         })
@@ -245,11 +236,6 @@ class HistoryItem {
 class CsvFile {
   constructor(gist) {
     this.gist = gist;
-    // this.gistId = gistId;
-    // this.fileName = fileName;
-    // this.token = token;
-    // this.owner = owner;
-
     this.#history = [];
     this.#updated = false;
   }
@@ -371,7 +357,6 @@ const main = async () => {
 
   if (workflowId) {
     await workflowRunHistory.fetchWorkflowRuns();
-    console.log(`Workflow history updated: ${workflowRunHistory.history}`);
   } else {
     const workflows = await workflowRunHistory.fetchWorkflows();
     const lines = workflows.map(({ id, name, path }) => `${id}: ${path} - ${name}`);
@@ -385,6 +370,5 @@ main()
     process.exit(1);
   })
   .finally(() => {
-    console.log('Script finished execution.');
     process.exit(0); // Ensure the process exits after all async work
   });
