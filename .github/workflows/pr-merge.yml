@@ -14,7 +14,7 @@ jobs:
         with:
           script: |
             // Log the full context object to understand what's available
-            const branch = github.context.payload.pull_request.head.ref; // Access the PR source branch
+            const branch = context.payload.pull_request.head.ref; // Access the PR source branch
             console.log(`Current branch: ${branch}`);
             if (!branch.startsWith('release/v')) {
               console.log('Not a release branch. Skipping this step.');
