@@ -2,9 +2,6 @@ name: Debug - release event trigger
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - ci/release-trigger
 
 jobs:
   check-pr:
@@ -28,7 +25,6 @@ jobs:
               event_type: 'new_release',
               client_payload: {
                 prNumber: 999,
-                prTitle: 'Test PR',
-                branch: 'release/1.0.1',
+                branch: 'release/v1.0.2',
               }
             });

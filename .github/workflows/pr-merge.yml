@@ -19,7 +19,7 @@ jobs:
             if (!pr.merged) {
               return;
             }
-            
+
             // Log the full context object to understand what's available
             const branch = context.payload.pull_request.head.ref; // Access the PR source branch
             console.log(`Current branch: ${branch}`);
@@ -30,7 +30,7 @@ jobs:
 
             const tagName = branch.split('/')[1]; // Assuming release/v1.0.0 -> v1.0.0
             console.log(`Tag Name: ${tagName}`);
-            
+
             // Fetch remote tags
             const { data: remoteTags } = await github.rest.repos.listTags({
               owner: context.repo.owner,
@@ -49,8 +49,7 @@ jobs:
               repo: context.repo.repo,
               event_type: 'new_release',
               client_payload: {
-                prNumber: context.payload.pull_request?.number,
-                prTitle: context.payload.pull_request?.title,
-                branch: github.head_ref,
+                prNumber: context.payload.number,
+                branch,
               }
             });
