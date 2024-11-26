@@ -17,9 +17,8 @@ jobs:
             console.log('Event Name:', process.env.GITHUB_EVENT_NAME);
             console.log('Full context:', JSON.stringify(context, null, 2));
             
-            console.log('github.head_ref:', github.head_ref);
-            console.log('github.ref_name:', github.ref_name);
-            const branch = github.ref_name; // e.g., release/v1.0.0
+            console.log('github.head.ref:', github.head.ref);
+            const branch = github.head.ref; // e.g., release/v1.0.0
             console.log(`Current branch: ${branch}`);
             if (!branch.startsWith('release/v')) {
               console.log('Not a release branch. Skipping this step.');
