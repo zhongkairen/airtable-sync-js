@@ -10,14 +10,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check if PR is from release branch
-        if: startsWith(github.ref, 'refs/heads/release/v')
         uses: actions/github-script@v7
         with:
           script: |
-            const ref = github.ref; // Example: refs/heads/release/v1.0.0
-            const branch = ref.split('/').slice(2).join('/'); // Extract branch name (e.g., release/v1.0.0)
-            const tagName = `${branch.split('/')[1]}`; // Assuming release/v1.0.0 -> v1.0.0
-            console.log(`Branch: ${branch}`);
+            const branch = github.ref_name; // e.g., release/v1.0.0
+            console.log(`Current branch: ${branch}`);
+            if (!branch.startsWith('release/v')) {
+              console.log('Not a release branch. Skipping this step.');
+              return;
+            }
+            
+            const tagName = branch.split('/')[1]; // Assuming release/v1.0.0 -> v1.0.0
             console.log(`Tag Name: ${tagName}`);
             
             // Fetch remote tags
