@@ -18,7 +18,9 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const { prNumber, branch } = github.event.client_payload;
+            console.log(`context.payload: ${JSON.stringify(context.payload, null, 2)}`);
+
+            const { prNumber, branch } = context.payload.client_payload;
             console.log(`PR Number: ${prNumber}`);
             console.log(`Branch: ${branch}`);
             if (!branch.startsWith('release/')) {
