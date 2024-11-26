@@ -1,5 +1,22 @@
 # Changelog
 
+## [v1.0.2]
+### Changed
+- Rename bin name to `airtalbe-sync-js`
+- Rename package name to include the scope prefix
+
+### Documentation
+- Add README
+- Add docs in `doc` directory
+
+### CI/CD
+- Add publishing package to GitHub package registry
+- Add a workflow to update run history of production sync
+- Add a workflow to publish run chart HTML page
+- Add a workflow to run integration tests on PR merge
+- Change unit test workflow to run only in source changes
+- Change release workflow to be triggered by the `new_release` event
+
 ## [v1.0.1]
 ### Added
 - Documentation on `config.json` file
