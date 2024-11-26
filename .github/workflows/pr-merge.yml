@@ -13,6 +13,10 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
+            // Log the full context object to understand what's available
+            console.log('Event Name:', process.env.GITHUB_EVENT_NAME);
+            console.log('Full context:', JSON.stringify(context, null, 2));
+            
             console.log('github.head_ref:', github.head_ref);
             console.log('github.ref_name:', github.ref_name);
             const branch = github.ref_name; // e.g., release/v1.0.0
