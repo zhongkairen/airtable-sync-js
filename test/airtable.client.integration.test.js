@@ -41,16 +41,12 @@ describe('AirtableClient - Integration Test', () => {
       expect(client.fieldInSchema('Issue Link')).to.be.true;
 
       const fields = client.tableSchema.fields.map((field) => field.name);
-      // console.log('tableSchema.fields:', fields.join(', '));
     });
   });
 
   describe('readRecords', () => {
-    // const { airtable: config } = loadConfig();
-    // config.viewName ??= 'Grid view';
-
     it('should read records from Airtable and map them to AirtableRecord instances', async function () {
-      this.timeout(5000);
+      this.timeout(10000);
       const maxRecords = 10;
       await client.readRecords(maxRecords);
 
@@ -76,8 +72,6 @@ describe('AirtableClient - Integration Test', () => {
 
       const testRecords = client.records.filter((record) => record.title.startsWith('[test]'));
       expect(testRecords).to.have.lengthOf.at.least(1);
-      // expect(testRecord).to.exist;
-      // expect(testRecord.issueNumber).to.equal(54);
     });
   });
 
@@ -96,8 +90,6 @@ describe('AirtableClient - Integration Test', () => {
       // there are records available, i.e. all records starting with '[test]' title
       const testRecords = uut.records.filter((record) => record.title.startsWith('[test]'));
       expect(testRecords).to.have.lengthOf.at.least(2);
-
-      // console.log('testRecords[0].fields:', JSON.stringify(testRecords[0].fields, null, 2));
 
       // The values to update the records with,
       // IDs are not important as they will be replaced with the ones for testRecords
