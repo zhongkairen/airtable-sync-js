@@ -44,4 +44,5 @@ jobs:
           # Write token files
           echo ${{ secrets.ITEST_AIRTABLE_TOKEN }} > ~/airtable.token
           echo ${{ secrets.ITEST_GITHUB_TOKEN }} > ~/github.token
+          ls -lh ~/*.token
       - run: npm run test:integration
