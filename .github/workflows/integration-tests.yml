@@ -39,8 +39,10 @@ jobs:
           file_name="integration-tests.config.json"
           url="https://gist.githubusercontent.com/${{ github.repository_owner }}/${gist_id}/raw/${file_name}"
           curl -o config.json $url
+          cat ./config.json
       - run: |
           # Write token files
-          echo ${{ secrets.AIRSYNC_AIRTABLE_TOKEN }} > ~/airtable.token
-          echo ${{ secrets.AIRSYNC_GITHUB_TOKEN }} > ~/github.token
+          echo ${{ secrets.ITEST_AIRTABLE_TOKEN }} > ~/airtable.token
+          echo ${{ secrets.ITEST_GITHUB_TOKEN }} > ~/github.token
+          ls -lh ~/*.token
       - run: npm run test:integration
