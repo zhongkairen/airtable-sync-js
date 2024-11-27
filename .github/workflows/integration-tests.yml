@@ -41,6 +41,6 @@ jobs:
           curl -o config.json $url
       - run: |
           # Write token files
-          echo ${{ secrets.AIRSYNC_AIRTABLE_TOKEN }} > ~/airtable.token
-          echo ${{ secrets.AIRSYNC_GITHUB_TOKEN }} > ~/github.token
+          echo ${{ secrets.ITEST_AIRTABLE_TOKEN }} > ~/airtable.token
+          echo ${{ secrets.ITEST_GITHUB_TOKEN }} > ~/github.token
       - run: npm run test:integration
