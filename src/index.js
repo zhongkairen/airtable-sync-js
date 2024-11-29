@@ -18,13 +18,13 @@ class Main {
   async start() {
     const startTime = process.hrtime();
     try {
-      const logLevel = parseArguments();
+      const { logLevel, configFile } = parseArguments();
       CustomLogger.setLogLevel(logLevel);
       this.logger = new CustomLogger(import.meta.url);
       this.logger.info(`Log level set to '${logLevel}'`);
       timer.tapIn('Log level set');
 
-      await this.loadConfiguration();
+      await this.loadConfiguration(configFile);
       timer.tapIn('Loaded configuration');
       await this.syncRecords();
       timer.tapIn('Synced records');
@@ -35,11 +35,13 @@ class Main {
     timer.print(this.logger);
   }
 
-  async loadConfiguration() {
+  async loadConfiguration(configFile) {
     this.logger.debug('Reading records from Airtable...');
+    configFile ??= PathUtil.file.configJson;
 
     try {
-      const configJson = new ConfigJson(PathUtil.file.configJson);
+      this.logger.info(`Using configuration file: ${configFile}`);
+      const configJson = new ConfigJson(configFile);
       await configJson.load();
       this.airtableSync = new AirtableSync(configJson);
     } catch (error) {

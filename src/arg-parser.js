@@ -18,6 +18,12 @@ function parseArguments() {
     yargs(hideBin(process.argv)).usage('Usage: $0 [options]')
   );
 
+  argv.option('config', {
+    alias: 'c',
+    type: 'string',
+    describe: 'Specify the configuration file to use',
+  });
+
   // Set conflicts among all logging level options
   levels.forEach((level, _, arr) =>
     argv.conflicts(
@@ -28,7 +34,9 @@ function parseArguments() {
 
   const parsed = argv.help().parseSync();
 
-  return levels.find((level) => parsed[level]) || 'error';
+  const logLevel = levels.find((level) => parsed[level]) || 'error';
+  const configFile = parsed.config;
+  return { logLevel, configFile };
 }
 
 export { parseArguments };
