@@ -1,0 +1,9 @@
+query GetProjectId($repoOwner: String!, $repoName: String!, $projectName: String!) {
+  repository(owner: $repoOwner, name: $repoName) {
+    projectsV2(first: 1, query: $projectName) {
+      nodes {
+        id
+      }
+    }
+  }
+}
