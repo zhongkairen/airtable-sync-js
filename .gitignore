@@ -3,7 +3,8 @@ dist/
 .DS_Store
 .vscode
 .idea
-config.json
 .config/
 .config/*
+config.json
+*.config.json
 .secrets
