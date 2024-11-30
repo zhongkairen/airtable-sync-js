@@ -16,8 +16,9 @@
     "start": "node --no-warnings --experimental-specifier-resolution=node src/index.js",
     "start:prod": "node --no-warnings --experimental-specifier-resolution=node dist/index.js",
     "dev": "node --no-warnings --experimental-specifier-resolution=node src/index.js -d",
-    "test": "mocha --no-warnings --reporter dot 'test/**/*.test.js' --ignore 'test/**/*.integration.test.js'",
+    "test": "mocha --no-warnings --reporter dot 'test/**/*.test.js' --ignore 'test/**/*.integration.test.js' --ignore 'test/**/*.e2e.test.js'",
     "test:integration": "mocha --no-warnings --reporter spec 'test/**/*.integration.test.js'",
+    "test:e2e": "mocha --no-warnings --reporter spec 'test/**/*.e2e.test.js'",
     "reinstall": "npm uninstall $(npm ls --depth=0 --parseable | tail -n +2 | sed 's|.*/||') && npm install"
   },
   "author": "Zhongkai Ren",
