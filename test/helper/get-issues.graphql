@@ -1,0 +1,63 @@
+query getIssues($limit: Int!, $projectId: ID!) {
+  node(id: $projectId) {
+    ... on ProjectV2 {
+      items(first: $limit) {
+        nodes {
+          id
+          fieldValues(first: 20) {
+            nodes {
+              ... on ProjectV2ItemFieldTextValue {
+                text
+                field {
+                  ... on ProjectV2FieldCommon {
+                    name
+                  }
+                }
+              }
+              ... on ProjectV2ItemFieldDateValue {
+                date
+                field {
+                  ... on ProjectV2FieldCommon {
+                    name
+                  }
+                }
+              }
+              ... on ProjectV2ItemFieldSingleSelectValue {
+                name
+                field {
+                  ... on ProjectV2FieldCommon {
+                    name
+                  }
+                }
+              }
+              ... on ProjectV2ItemFieldNumberValue {
+                number
+                field {
+                  ... on ProjectV2FieldCommon {
+                    name
+                  }
+                }
+              }
+              ... on ProjectV2ItemFieldIterationValue {
+                duration
+                startDate
+                title
+                field {
+                  ... on ProjectV2FieldCommon {
+                    name
+                  }
+                }
+              }
+            }
+          }
+          content {
+            ... on Issue {
+              title
+              number
+            }
+          }
+        }
+      }
+    }
+  }
+}

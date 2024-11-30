@@ -1,0 +1,18 @@
+query GetProjectFieldIdByName($projectId: ID!) {
+  node(id: $projectId) {
+    ... on ProjectV2 {
+      fields(first: 100) {
+        nodes {
+          ... on ProjectV2Field {
+            id
+            name
+          }
+          ... on ProjectV2SingleSelectField {
+            name
+            id
+          }
+        }
+      }
+    }
+  }
+}

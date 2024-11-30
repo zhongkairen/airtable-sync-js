@@ -1,0 +1,26 @@
+query GetIssueAndProjectItem(
+  $repoOwner: String!
+  $repoName: String!
+  $issueNumber: Int!
+  $projectId: ID!
+) {
+  repository(owner: $repoOwner, name: $repoName) {
+    issue(number: $issueNumber) {
+      id # Issue ID
+    }
+  }
+  node(id: $projectId) {
+    ... on ProjectV2 {
+      items(first: 100) {
+        nodes {
+          id # Project v2 Item ID
+          content {
+            ... on Issue {
+              id # Content ID, which is the Issue ID
+            }
+          }
+        }
+      }
+    }
+  }
+}
