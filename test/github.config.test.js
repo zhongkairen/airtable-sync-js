@@ -53,11 +53,11 @@ describe('GitHubConfig', () => {
       const args = mock.UserToken.args[0];
 
       // Validate the nameDict argument
-      expect(args[0]).to.have.property('token', 'GITHUB_TOKEN');
-      expect(args[0]).to.have.property('tokenPath', 'GITHUB_TOKEN_PATH');
+      expect(args[0]).to.have.property('tokenEnv', 'GITHUB_TOKEN');
+      expect(args[0]).to.have.property('tokenEnvPath', 'GITHUB_TOKEN_PATH');
       expect(args[0]).to.include({
-        token: 'GITHUB_TOKEN',
-        tokenPath: 'GITHUB_TOKEN_PATH',
+        tokenEnv: 'GITHUB_TOKEN',
+        tokenEnvPath: 'GITHUB_TOKEN_PATH',
         configToken: 'token',
         configTokenPath: 'tokenPath',
       });
