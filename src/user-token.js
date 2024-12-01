@@ -16,11 +16,9 @@ class UserToken {
      * @param fallback - Fallback values for the token and token path.
      * @throws {Error} If neither the token path nor the token is set in the environment.
      */
-    const token = names.token;
-    const tokenPath = names.tokenPath;
-
-    this.token = token ? process.env[token] : undefined;
-    this.tokenPath = tokenPath ? process.env[tokenPath] : undefined;
+    const { tokenEnv, tokenEnvPath } = names;
+    this.token = tokenEnv ? process.env[tokenEnv] : undefined;
+    this.tokenPath = tokenEnvPath ? process.env[tokenEnvPath] : undefined;
 
     if (!this.tokenPath && !this.token) {
       const configToken = names.configToken;

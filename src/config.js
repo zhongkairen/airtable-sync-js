@@ -19,9 +19,9 @@ class ConfigBase {
     // Define the names of the environment variables and configuration keys for the token
     const nameDict = {
       // Environment variable names for the token
-      token: `${prefix}_TOKEN`,
+      tokenEnv: configJson.tokenEnv ?? `${prefix}_TOKEN`,
       // Environment variable names for the token file path
-      tokenPath: `${prefix}_TOKEN_PATH`,
+      tokenEnvPath: configJson.tokenEnvPath ?? `${prefix}_TOKEN_PATH`,
 
       // Key name in the config.json for the token
       configToken: 'token',
