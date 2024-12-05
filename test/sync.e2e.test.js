@@ -2,10 +2,13 @@ import { expect, assert } from 'chai';
 import fs from 'fs';
 import { PathUtil, $path } from '../src/path-util.js';
 import { exec } from 'child_process';
+import { promisify } from 'util';
 import { AirtableClient } from './helper/at-client.js';
 import { GitHubClient } from './helper/gh-client.js';
 import { getRandomDateString } from './helper/utils.js';
 import exp from 'constants';
+
+const execAsync = promisify(exec);
 
 describe('airtable-sync-js - End-to-end Test', function () {
   // Enable exit-on-first-fail for this test suite
@@ -16,12 +19,13 @@ describe('airtable-sync-js - End-to-end Test', function () {
   let airtableClient;
   let githubClient;
   let config;
-  const configFile = 'e2e.config.json';
-  const configPath = $path`test/${configFile}`;
+  const configPath = $path`test/sync.e2e.config.json`;
+  const cachePath = $path`test/sync.e2e.cache.json`;
   const currentValues = [];
   const updatedValues = [];
   let stdOut = '';
   let stdError = '';
+  let statusText = '';
   let debug = false;
 
   before(function () {
@@ -32,20 +36,20 @@ describe('airtable-sync-js - End-to-end Test', function () {
   beforeEach(function () {
     stdOut = '';
     stdError = '';
+    statusText = '';
   });
 
   afterEach(function () {
+    if (statusText) {
+      const testTitle = this.currentTest.title;
+      const padding = 7;
+      process.stdout.write(' '.repeat(testTitle.length + padding) + `\x1b[1A${statusText}\n`);
+    }
     if (stdError) console.error(`ERROR: ${stdError}`);
     if (stdOut) console.log(stdOut);
   });
 
   it('1 - Prepare clients', function () {
-    // Download integration test configuration
-    const gistId = '';
-
-    // todo - Download the configuration file
-    // const configFile = downloadGist(gistId, gistFile);
-
     // Parse the configuration file
     config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
     airtableClient = new AirtableClient(config.airtable);
@@ -61,12 +65,20 @@ describe('airtable-sync-js - End-to-end Test', function () {
       githubClient.token.length > 10,
       'GitHub token is too short (must be at least 11 characters)'
     );
+
+    if (fs.existsSync(cachePath)) {
+      const cache = JSON.parse(fs.readFileSync(cachePath, 'utf8'));
+      githubClient.cache = cache;
+    }
   });
 
   it('2a - Query Github project ID ...', async function () {
-    // Fetch
+    if (githubClient.cache.projectId) {
+      statusText = `(skipped: using cache)`;
+      if (debug) stdOut = `Project ID: ${githubClient.cache.projectId}`;
+      this.skip();
+    }
     const projectId = await githubClient.queryProjectId();
-    // console.debug('projectId:', projectId);
     expect(projectId).to.be.a('string');
     expect(projectId).to.have.lengthOf.at.least(10);
     expect(projectId.startsWith('PVT_')).to.be.true;
@@ -74,8 +86,12 @@ describe('airtable-sync-js - End-to-end Test', function () {
   });
 
   it('2b - Query field IDs ...', async function () {
+    if (Object.keys(githubClient.cache.fieldIds).length > 0) {
+      statusText = `(skipped: using cache)`;
+      if (debug) stdOut = JSON.stringify(githubClient.cache.fieldIds, null, 2);
+      this.skip();
+    }
     const fieldMapping = await githubClient.queryFieldIds();
-
     if (debug) stdOut = JSON.stringify(fieldMapping, null, 2);
   });
 
@@ -122,22 +138,33 @@ describe('airtable-sync-js - End-to-end Test', function () {
   });
 
   it('4a - Query issue project item IDs ...', async function () {
-    await Promise.all(
-      updatedValues.map(({ issueNumber, fieldValues }) => {
-        return githubClient.queryIssueAndProjectItem(issueNumber);
-      })
-    );
+    const processIds = () => {
+      updatedValues.forEach((updatedValue) => {
+        const { issueNumber } = updatedValue;
+        const projectItemId = githubClient.getProjectItem(issueNumber);
+        updatedValue.projectItemId = projectItemId;
+        expect(projectItemId).to.be.a('string');
+        expect(projectItemId).to.have.lengthOf.at.least(10);
+        expect(projectItemId.startsWith('PVTI_')).to.be.true;
+      });
 
-    const ids = updatedValues.reduce((acc, updatedValue) => {
-      const { issueNumber } = updatedValue;
-      const { issueId, projectItemId } = githubClient.issues[issueNumber];
-      acc[issueNumber] = { issueId, projectItemId };
-      updatedValue.issueId = issueId;
-      updatedValue.projectItemId = projectItemId;
-      return acc;
-    }, {});
+      if (debug) {
+        const ids = updatedValues.map((updatedValue) => {
+          const { issueNumber, projectItemId } = updatedValue;
+          return { issueNumber, projectItemId };
+        });
+        stdOut = JSON.stringify(ids, null, 2);
+      }
+    };
 
-    // if (debug) stdOut = JSON.stringify(ids, null, 2);
+    if (Object.keys(githubClient.cache.projectItemIds).length > 0) {
+      statusText = `(skipped: using cache)`;
+      processIds();
+      this.skip();
+    } else {
+      await githubClient.queryIssueAndProjectItem();
+      processIds();
+    }
   });
 
   it('5 - Update GitHub issue fields to new values ...', async function () {
@@ -155,7 +182,7 @@ describe('airtable-sync-js - End-to-end Test', function () {
     });
   });
 
-  it('6 - Verify GitHub issue fields have new values ...', async function () {
+  it('5a - Verify GitHub issue fields have new values ...', async function () {
     this.timeout(12000);
     const issues = await githubClient.readIssues();
     issues.forEach((issue) => {
@@ -172,25 +199,16 @@ describe('airtable-sync-js - End-to-end Test', function () {
     });
   });
 
-  it('7 - Sync records ...', async function () {
+  it('6 - Sync records ...', async function () {
     this.timeout(20000);
     const command = `node --no-warnings src/index.js --config ${configPath} ${debug ? '-v' : ''}`;
     const options = { cwd: PathUtil.dir.packageRoot };
-    await new Promise((resolve, reject) => {
-      exec(command, options, (error, stdout, stderr) => {
-        if (error) {
-          console.error(`Error: ${error.message}`);
-          return reject(error);
-        }
-
-        stdOut = stdout;
-        stdError = stderr;
-        resolve();
-      });
-    });
+    const { stdout, stderr } = await execAsync(command, options);
+    if (debug) stdOut = stdout;
+    stdError = stderr;
   });
 
-  it('8 - Read updated records ...', async function () {
+  it('7 - Read updated records ...', async function () {
     this.timeout(120000);
     const records = await airtableClient.readRecords();
 
@@ -204,7 +222,7 @@ describe('airtable-sync-js - End-to-end Test', function () {
     });
   });
 
-  it('9 - Verify values', function () {
+  it('8 - Verify values', function () {
     updatedValues.forEach((updatedValue) => {
       updatedValue.fieldValues.forEach((fieldValue) => {
         const { github, airtable } = fieldValue;
@@ -212,5 +230,14 @@ describe('airtable-sync-js - End-to-end Test', function () {
         expect(github.value, context).to.equal(airtable.value);
       });
     });
+  });
+
+  it('9 - Save cache', async function () {
+    if (fs.existsSync(cachePath)) {
+      statusText = '(skipped: cache exists)';
+      this.skip();
+    }
+    fs.writeFileSync(cachePath, JSON.stringify(githubClient.cache, null, 2));
+    expect(fs.existsSync(cachePath)).to.be.true;
   });
 });

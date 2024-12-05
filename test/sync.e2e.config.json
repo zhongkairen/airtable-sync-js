@@ -1,0 +1,22 @@
+{
+  "airtable": {
+    "_comment.baseId": "Sync Sandbox",
+    "baseId": "app5c1A4u4zw1UbXN",
+    "_comment.tableId": "airtable-sync table",
+    "tableId": "tblma0DImG8wj84Va",
+    "tableName": "airtable-sync",
+    "viewName": "Test Records",
+    "tokenEnv": "E2E_ASJ_AIRTABLE_TOKEN"
+  },
+
+  "github": {
+    "repoOwner": "zhongkairen",
+    "repoName": "airtable-sync-js",
+    "projectName": "Sync Test",
+    "fieldMap": {
+      "Start D": "Start Date",
+      "End D": "Delivery Date"
+    },
+    "tokenEnv": "E2E_ASJ_GITHUB_TOKEN"
+  }
+}

@@ -6,5 +6,7 @@ dist/
 .config/
 .config/*
 config.json
-*.config.json
 .secrets
+
+# End-to-end test config and cache
+test/*.cache.json
