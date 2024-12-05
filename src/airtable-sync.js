@@ -171,7 +171,10 @@ export class AirtableSync {
    */
   #getUpdateFields(record, issue) {
     return Object.entries(this.fieldMap).reduce((updatedFields, [githubField, airtableField]) => {
-      if (this.#airtableClient.fieldInSchema(airtableField))
+      if (
+        this.#airtableClient.fieldInSchema(airtableField) &&
+        record.fields[airtableField] !== issue.fields[githubField]
+      )
         updatedFields[airtableField] = issue.fields[githubField];
       return updatedFields;
     }, {});
