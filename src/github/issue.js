@@ -20,7 +20,7 @@ class GitHubIssue {
   static FieldType = FieldType;
 
   static parseDate(dateStr) {
-    const date = parseISO(dateStr);
+    const date = parseISO(dateStr); // from YYYY-MM-DD format in local timezone
     if (isValid(date)) return date;
     return null;
   }

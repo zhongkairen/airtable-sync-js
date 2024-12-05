@@ -1,5 +1,6 @@
 import { URL } from 'url';
 import { CustomLogger } from '../custom-logger.js';
+import { format as formatISO } from 'date-fns';
 
 const logger = new CustomLogger(import.meta.url);
 
@@ -259,7 +260,7 @@ class AirtableRecord {
     if (typeof value === 'number') return value;
     // todo - add support for other field types, currently only tested to work for text and number fields
     if (value == null) return null; // nullish value is treated as empty string to clear a field
-    if (value instanceof Date) return value.toISOString().split('T')[0]; // "YYYY-MM-DD" format
+    if (value instanceof Date) return formatISO(value, 'yyyy-MM-dd'); // YYYY-MM-DD format in local timezone
     return String(value);
   }
 }

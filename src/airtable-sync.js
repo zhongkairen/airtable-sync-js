@@ -41,31 +41,29 @@ export class AirtableSync {
     await this.#prepSync();
     CustomLogger.timer.tapIn('Prepared sync');
 
-    const recordsToUpdate = [];
-
     logger.verbose(
       `Syncing ${this.#airtableClient.recordsInCurrentRepo.length} record(s) from ` +
         `current_repo: ${this.#airtableClient.currentRepo}, of total ${this.#airtableClient.records.length} record(s).`
     );
 
-    for (const record of this.#airtableClient.recordsInCurrentRepo) {
-      const issue = this.github.epicIssues.find((issue) => issue.number === record.issueNumber);
+    const recordsToUpdate = this.#airtableClient.recordsInCurrentRepo.reduce((records, record) => {
+      const issue = this.github.epicIssues.find(({ number }) => number === record.issueNumber);
       if (!issue) {
         logger.warn(`Issue ${record.issueNumber} not found in GitHub.`);
-        continue;
+      } else {
+        const updatedFields = this.#getUpdateFields(record, issue);
+        if (Object.keys(updatedFields).length > 0) {
+          const recordToUpdate = record.setFields(updatedFields);
+          if (Object.keys(recordToUpdate.fields).length > 0) records.push(recordToUpdate);
+        }
       }
-      const updatedFields = this.#getUpdateFields(record, issue);
-      if (Object.keys(updatedFields).length === 0) {
-        const recordToUpdate = record.setFields(updatedFields);
-        recordsToUpdate.push(recordToUpdate);
-      }
-    }
+      return records;
+    }, []);
 
     // Perform the batch update and handle the result
     CustomLogger.timer.tapIn('Before updating records');
 
     // todo: check why all the records are being updated
-    logger.debug(`recordsToUpdate=\n ${JSON.stringify(recordsToUpdate, null, 2)}`);
     logger.debug(`Updating ${recordsToUpdate.length} record(s) in Airtable...`);
     const updateResult = await this.#airtableClient.batchUpdate(recordsToUpdate);
     logger.debug(`Updated ${recordsToUpdate.length} record(s) in Airtable...`);
@@ -173,7 +171,10 @@ export class AirtableSync {
    */
   #getUpdateFields(record, issue) {
     return Object.entries(this.fieldMap).reduce((updatedFields, [githubField, airtableField]) => {
-      if (this.#airtableClient.fieldInSchema(airtableField))
+      if (
+        this.#airtableClient.fieldInSchema(airtableField) &&
+        record.fields[airtableField] !== issue.fields[githubField]
+      )
         updatedFields[airtableField] = issue.fields[githubField];
       return updatedFields;
     }, {});
