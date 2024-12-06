@@ -1,0 +1,64 @@
+name: CI - e2e tests
+
+on:
+  pull_request:
+    paths-ignore:
+      - ".editorconfig"
+      - ".eslintrc.cjs"
+      - ".github/**"
+      - ".gitignore"
+      - ".npmignore"
+      - ".prettierrc*"
+      - "CHANGELOG.md"
+      - "README.md"
+      - "build.js"
+      - "doc/**"
+      - "example.config.json"
+      - "html/**"
+      - "jsconfig.json"
+
+    branches:
+      - main
+  workflow_dispatch: # Enables manual trigger
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    env:
+      CACHE_PATH: test/sync.e2e.cache.json
+      E2E_ASJ_AIRTABLE_TOKEN: ${{ secrets.E2E_ASJ_AIRTABLE_TOKEN }}
+      E2E_ASJ_GITHUB_TOKEN: ${{ secrets.E2E_ASJ_GITHUB_TOKEN }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up cache key
+        id: cache-key
+        run: echo "CACHE_KEY=e2e-test-cache-${{ runner.os }}-${{ hashFiles('test/sync.e2e.config.json') }}" >> $GITHUB_ENV
+
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Restore cache using a common key pattern
+      - name: Restore cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.CACHE_PATH }}
+          key: ${{ env.CACHE_KEY }}
+
+      - name: Run end-to-end tests
+        run: npm run test:e2e
+
+      # Save the cache after tests (if needed)
+      - name: Save cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.CACHE_PATH }}
+          key: ${{ env.CACHE_KEY }}

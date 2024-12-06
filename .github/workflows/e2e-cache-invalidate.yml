@@ -1,0 +1,23 @@
+name: CI - e2e tests - delete caches
+
+on:
+  workflow_dispatch: # Manual trigger for cache deletion
+
+jobs:
+  delete-e2e-test-cache:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: List all caches and filter those matching the pattern
+      - name: Fetch and filter caches
+        run: |
+          CACHE_LIST=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" "https://api.github.com/repos/${{ github.repository }}/actions/caches")
+          CACHES_TO_DELETE=$(echo "$CACHE_LIST" | jq -r '.caches[] | select(.key | startswith("e2e-test-cache-${{ runner.os }}-")) | .id')
+
+      # Step 2: Delete caches if found
+      - name: Delete caches
+        run: |
+          for CACHE_ID in $CACHES_TO_DELETE; do
+            echo "Deleting cache with ID: $CACHE_ID"
+            curl -X DELETE -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" "https://api.github.com/repos/${{ github.repository }}/actions/caches/$CACHE_ID"
+          done

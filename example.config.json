@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0",
+  "version": "1.1.0",
   "doc": "doc/config-json.md",
 
   "_comment": "This is an example configuration",
@@ -17,11 +17,17 @@
     "_comment.viewName": "optional view name in the table",
     "viewName": "Your team view",
 
-    "_comment.token": "optional access token (fallback to AIRTABLE_TOKEN env)",
+    "_comment.token": "optional access token text (fallback to AIRTABLE_TOKEN env)",
     "token": "patEzF45bYN4571Oh.<your airtable token>",
 
+    "_comment.tokenEnv": "optional access token from env variable (fallback to AIRTABLE_TOKEN env)",
+    "tokenEnv": "AIRTABLE_ACCESS_TOKEN",
+
     "_comment.tokenPath": "optional token path (fallback to AIRTABLE_TOKEN_PATH env)",
-    "tokenPath": "/path/to/airtable_token"
+    "tokenPath": "/path/to/airtable_token",
+
+    "_comment.tokenEnvPath": "optional token path from env variable (fallback to AIRTABLE_TOKEN_PATH env)",
+    "tokenEnvPath": "AIRTABLE_ACCESS_TOKEN_PATH"
   },
 
   "github": {
@@ -44,7 +50,13 @@
     "_comment.token": "optional access token (fallback to GITHUB_TOKEN env)",
     "token": "ghp_42m57hH6FX6<your github token>",
 
+    "_comment.tokenEnv": "optional access token from env variable (fallback to GITHUB_TOKEN env)",
+    "tokenEnv": "GITHUB_ACCESS_TOKEN",
+
     "_comment.tokenPath": "optional token path (fallback to GITHUB_TOKEN_PATH env)",
-    "tokenPath": "/path/to/github_token"
+    "tokenPath": "/path/to/github_token",
+
+    "_comment.tokenEnvPath": "optional token path from env variable (fallback to GITHUB_TOKEN_PATH env)",
+    "tokenEnvPath": "GITHUB_ACCESS_TOKEN_PATH"
   }
 }

@@ -3,7 +3,10 @@ dist/
 .DS_Store
 .vscode
 .idea
-config.json
 .config/
 .config/*
+config.json
 .secrets
+
+# End-to-end test config and cache
+test/*.cache.json

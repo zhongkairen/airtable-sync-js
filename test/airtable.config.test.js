@@ -53,11 +53,11 @@ describe('AirtableConfig', () => {
       const args = mock.UserToken.args[0];
 
       // Validate the nameDict argument
-      expect(args[0]).to.have.property('token', 'AIRTABLE_TOKEN');
-      expect(args[0]).to.have.property('tokenPath', 'AIRTABLE_TOKEN_PATH');
+      expect(args[0]).to.have.property('tokenEnv', 'AIRTABLE_TOKEN');
+      expect(args[0]).to.have.property('tokenEnvPath', 'AIRTABLE_TOKEN_PATH');
       expect(args[0]).to.include({
-        token: 'AIRTABLE_TOKEN',
-        tokenPath: 'AIRTABLE_TOKEN_PATH',
+        tokenEnv: 'AIRTABLE_TOKEN',
+        tokenEnvPath: 'AIRTABLE_TOKEN_PATH',
         configToken: 'token',
         configTokenPath: 'tokenPath',
       });

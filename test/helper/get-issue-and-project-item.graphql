@@ -1,0 +1,16 @@
+query GetProjectItems($projectId: ID!) {
+  node(id: $projectId) {
+    ... on ProjectV2 {
+      items(first: 100) {
+        nodes {
+          id # Project v2 Item ID
+          content {
+            ... on Issue {
+              number
+            }
+          }
+        }
+      }
+    }
+  }
+}
