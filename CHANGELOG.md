@@ -1,5 +1,25 @@
 # Changelog
 
+## [v1.1.0]
+### Added
+- Add command option --config/-c
+
+### Changed
+- Update field only if values are different
+- Cleanup package for redundant deps and files
+
+### Fixed
+- Sync issue for multiple fields
+- Sync issue that no changes are detected
+- Fix date parsing inconsistency in issue and record
+
+### CI/CD
+- Add end-to-end testing and workflow
+- Fix issue in release workflow
+- Fix integration test config.json and tokens
+- Improve flakiness in integration tests
+- Improve trigger for pages deployment workflow
+
 ## [v1.0.2]
 ### Changed
 - Rename bin name to `airtalbe-sync-js`
