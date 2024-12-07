@@ -9,6 +9,20 @@ const chartData = {
   statuses: [],
   types: [],
 };
+const opacity = 0.5;
+const palette = {
+  column: {
+    success: `rgba(22, 235, 235, ${opacity})`, // Green
+    failure: `rgba(206, 54, 54, ${opacity})`, // Red
+    manual: `rgba(54, 99, 235, ${opacity})`, // Blue
+    hover: 'rgba(206, 206, 206, .2)',
+    hoverBorder: 'rgba(206, 206, 206, .2)',
+  },
+  tick: {
+    weekend: 'red',
+    default: Chart.defaults.color,
+  },
+};
 const timeZone = 'Europe/Helsinki';
 fetch(url)
   .then((response) => response.text())
@@ -64,24 +78,22 @@ function formatDateTime(dateTime, style) {
 function parseData(raw) {
   const lines = raw.trim().split('\n');
   lines.reverse(); // Reverse the order of the lines so that the latest runs are shown on the right
-  lines.forEach((line) => {
+  lines.forEach((line, i) => {
     // '2024-10-18T21:43:46Z,46,workflow_dispatch,success,31,0.2.0'
     const [timestamp, runNumber, runType, status, duration, version] = line.trim().split(',');
     const durationNum = parseFloat(duration) || 0;
 
+    const success = status === 'true';
     const color = (() => {
-      if (status !== 'success') {
-        return 'rgba(255, 99, 132, 0.5)'; // Red for failed runs
-      } else if (runType === 'workflow_dispatch') {
-        return 'rgba(54, 162, 235, 0.5)'; // Blue for manual runs
-      }
-      return 'rgba(75, 192, 192, 0.5)'; // Teal for successful scheduled runs
+      if (!success) return palette.column.failure;
+      if (runType === 'workflow_dispatch') return palette.column.manual;
+      return palette.column.success;
     })();
 
     // Add status if status is not success
     const icons = ['⚠️', '✅'];
     const statuses = ['failure', 'success'];
-    const statusIndex = status == 'true' ? 1 : 0;
+    const statusIndex = success ? 1 : 0;
     const statusText = icons[statusIndex] + statuses[statusIndex];
 
     chartData.timestamps.push(new Date(timestamp));
@@ -112,7 +124,7 @@ function updateChart(cursor) {
   myChart.data.datasets[0].backgroundColor = chartData.colors.slice(start, end);
   myChart.data.datasets[0].borderColor = chartData.colors
     .slice(start, end)
-    .map((color) => color.replace(/0\.5/, '1')); // Full opacity for borders
+    .map((color) => color.replace(/0\.5/, '0.2')); // Full opacity for borders
 
   myChart.update();
 
@@ -134,8 +146,8 @@ const myChart = new Chart(ctx, {
         backgroundColor: chartData.colors,
         borderColor: chartData.colors.map((color) => color.replace(/0\.5/, '1')), // Full opacity for borders
         borderWidth: 1,
-        hoverBackgroundColor: 'rgba(255, 206, 86, 0.2)',
-        hoverBorderColor: 'rgba(255, 206, 86, 1)',
+        hoverBackgroundColor: palette.column.hover,
+        hoverBorderColor: palette.column.hoverBorder,
       },
     ],
   },
@@ -148,7 +160,7 @@ const myChart = new Chart(ctx, {
             const index = currentCursor + context.index;
             const timestamp = chartData.timestamps[index];
             const isWeekend = timestamp.getDay() === 0 || timestamp.getDay() === 6;
-            return isWeekend ? 'red' : Chart.defaults.color;
+            return isWeekend ? palette.tick.weekend : palette.tick.default;
           },
         },
       },
