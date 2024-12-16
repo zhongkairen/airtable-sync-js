@@ -24,6 +24,14 @@
     "CHANGELOG.md",
     "example.config.json"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zhongkairen/airtable-sync-js.git"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com",
+    "access": "public"
+  },
   "author": "Zhongkai Ren",
   "license": "ISC",
   "description": "",
