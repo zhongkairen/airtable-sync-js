@@ -9,29 +9,21 @@ on:
   # manual triggering for debugging
   workflow_dispatch:
 
+permissions:
+  contents: write # For pushing code to the repository (e.g., commit and tag)
+  packages: write # To publish to GitHub Packages
+  issues: write # If you need to create issues for release notes (optional)
+  pull-requests: write # If you want to manage pull requests (optional)
+
+env:
+  GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }} # Used for GitHub API interactions
+  NPM_TOKEN: ${{ secrets.RELEASE_TOKEN }} # Used for publishing to GitHub Packages
+
 jobs:
   release:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check if the branch is a release branch
-        uses: actions/github-script@v7
-        with:
-          script: |
-            console.log(`context.payload: ${JSON.stringify(context.payload, null, 2)}`);
-
-            const { prNumber, branch } = context.payload.client_payload;
-            console.log(`PR Number: ${prNumber}`);
-            console.log(`Branch: ${branch}`);
-            if (!branch.startsWith('release/')) {
-              console.log("This workflow can only be triggered from a release branch (release/*).");
-              // If manually triggered, allow the workflow to continue
-              if (github.event_name !== 'workflow_dispatch') {
-                // Fail the step if it's not a valid branch and not manually triggered
-                core.setFailed("The PR does not originate from a valid release branch.");
-              }
-            }
-
       - name: Checkout code
         uses: actions/checkout@v4
 
@@ -39,93 +31,16 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "20"
+          cache: "npm"
 
       - name: Install dependencies
         run: npm install
 
-      - name: Get package info
-        uses: actions/github-script@v7
-        id: package_info
-        with:
-          script: |
-            const packageJson = require('./package.json');
-            const { version, name } = packageJson;
-            const packageFilePrefix = name.replace(/@/g, '').replace(/\//g, '-');
-            const packageFilePath = `dist/${packageFilePrefix}-${version}.tgz`;
-            const packageWildcardPath = `dist/${packageFilePrefix}-*.tgz`;
-            core.setOutput('PACKAGE_VERSION', version);
-            core.setOutput('PACKAGE_PATH', packageFilePath);
-            core.setOutput('PACKAGE_WC_PATH', packageWildcardPath);
-
-      - name: Verify version matches the tag
-        run: |
-          if [[ ! "$GITHUB_REF" =~ ^refs/tags/ ]]; then
-            echo "No tag is associated with this commit."
-            git fetch --tags
-            VERSION_IN_TAG=$(git describe --tags $(git rev-list --tags --max-count=1))
-          else
-            VERSION_IN_TAG=${GITHUB_REF#refs/tags/}
-          fi
-
-          if [ "$VERSION_IN_TAG" != "v${{ steps.package_info.outputs.PACKAGE_VERSION }}" ]; then
-            echo "Error: Tag version $VERSION_IN_TAG does not match package.json version $VERSION_IN_PACKAGE_JSON"
-            if [[ "${GITHUB_EVENT_NAME}" != "workflow_dispatch" ]]; then
-              exit 1
-            fi
-          else
-            echo "Version match successful: $VERSION_IN_TAG"
-            echo "TAG=$VERSION_IN_TAG" >> $GITHUB_ENV
-          fi
-
-      - name: Build and package
-        run: |
-          npm run build-and-pack
-          echo "Listing the generated package zip file:"
-          ls -lh ${{ steps.package_info.outputs.PACKAGE_WC_PATH }}
-
-      - name: Extract changes from changelog for the corresponding version
-        id: prepare_body
-        run: |
-          # Extract the multi-line changes under the version section
-          # example: ## [v1.0.0] until the next ## section or EOF
-          perl .github/workflows/extract-changes.pl "${{ steps.package_info.outputs.PACKAGE_VERSION }}" > release_notes.txt
-
-      # Conditional step for dry run if manually triggered
-      - name: Dry run release if manually triggered
-        if: github.event_name == 'workflow_dispatch'
-        run: |
-          echo "Dry run: Skipping the actual release process."
-          echo "files: ${{ steps.package_info.outputs.PACKAGE_PATH }}"
-          echo "name: Release v${{ steps.package_info.outputs.PACKAGE_VERSION }}"
-          echo "body: $(cat release_notes.txt)"
-          echo
-          echo "cat CHANGELOG.md"
-          cat CHANGELOG.md
-
-      # Step to create release and upload assets (normal run)
-      - name: Create Release and Upload Assets
-        if: github.event_name != 'workflow_dispatch' # Only run this for PR merges
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ env.TAG }}
-          files: ${{ steps.package_info.outputs.PACKAGE_PATH }}
-          name: Release ${{ steps.package_info.outputs.PACKAGE_VERSION }}
-          body_path: release_notes.txt
-          token: ${{ secrets.RELEASE_TOKEN }}
-
-      - name: Upload artifacts
-        if: github.event_name == 'workflow_dispatch'
-        uses: actions/upload-artifact@v4
-        with:
-          name: release-files
-          path: |
-            release_notes.txt
-            ${{ steps.package_info.outputs.PACKAGE_PATH }}
-
       - name: Authenticate with GitHub Packages
         run: |
-          echo "//npm.pkg.github.com/:_authToken=${{ secrets.RELEASE_TOKEN }}" > ~/.npmrc
+          echo "//npm.pkg.github.com/:_authToken=${{ env.NPM_TOKEN }}" > ~/.npmrc
           echo "registry=https://npm.pkg.github.com" >> ~/.npmrc
 
-      - name: Publish Package
-        run: npm publish --access public
+      - name: Run semantic-release
+        id: semantic_release
+        run: npx semantic-release --debug

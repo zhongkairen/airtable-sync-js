@@ -9,7 +9,7 @@ jobs:
   check-pr:
     runs-on: ubuntu-latest
     steps:
-      - name: Check if PR is from release branch
+      - name: Fire new_release event if PR is merged
         uses: actions/github-script@v7
         with:
           script: |
@@ -20,27 +20,9 @@ jobs:
               return;
             }
 
-            // Log the full context object to understand what's available
-            const branch = context.payload.pull_request.head.ref; // Access the PR source branch
-            console.log(`Current branch: ${branch}`);
-            if (!branch.startsWith('release/v')) {
-              console.log('Not a release branch. Skipping this step.');
+            const excludedPrefixes = ['ci', 'skip ci', 'doc'];
+            if (excludedPrefixes.some(prefix => pr.title.toLowerCase().startsWith(`[${prefix}]`))) {
               return;
-            }
-
-            const tagName = branch.split('/')[1]; // Assuming release/v1.0.0 -> v1.0.0
-            console.log(`Tag Name: ${tagName}`);
-
-            // Fetch remote tags
-            const { data: remoteTags } = await github.rest.repos.listTags({
-              owner: context.repo.owner,
-              repo: context.repo.repo
-            });
-
-            const tagExists = remoteTags.some(tag => tag.name === tagName);
-
-            if (!tagExists) {
-              core.setFailed(`Tag ${tagName} has not been pushed to the remote repository.`);
             }
 
             // Fire a new_release event to trigger the release job
