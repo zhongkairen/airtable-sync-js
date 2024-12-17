@@ -7,25 +7,46 @@
     "airtable-sync-js": "src/index.js"
   },
   "scripts": {
-    "build": "node script/build.js dist",
-    "pack": "cd dist && npm pack",
-    "build-and-pack": "npm run build && npm run pack",
-    "release": "node script/release.js",
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
     "format:class-order": "eslint --fix src -c .eslintrc.cjs",
     "start": "node --no-warnings --experimental-specifier-resolution=node src/index.js",
-    "start:prod": "node --no-warnings --experimental-specifier-resolution=node dist/index.js",
     "dev": "node --no-warnings --experimental-specifier-resolution=node src/index.js -d",
     "test": "mocha --no-warnings --reporter dot 'test/**/*.test.js' --ignore 'test/**/*.integration.test.js' --ignore 'test/**/*.e2e.test.js'",
     "test:integration": "mocha --no-warnings --reporter spec 'test/**/*.integration.test.js'",
     "test:e2e": "mocha --no-warnings --reporter spec 'test/**/*.e2e.test.js'",
     "reinstall": "npm uninstall $(npm ls --depth=0 --parseable | tail -n +2 | sed 's|.*/||') && npm install"
   },
+  "files": [
+    "src/**/*.js",
+    "src/**/*.graphql",
+    "README.md",
+    "CHANGELOG.md",
+    "example.config.json"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zhongkairen/airtable-sync-js.git"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com",
+    "access": "public"
+  },
+  "keywords": [
+    "airtable",
+    "utility",
+    "node",
+    "sync"
+  ],
   "author": "Zhongkai Ren",
   "license": "ISC",
   "description": "",
   "devDependencies": {
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/commit-analyzer": "^13.0.0",
+    "@semantic-release/git": "^10.0.1",
+    "@semantic-release/github": "^11.0.1",
+    "@semantic-release/release-notes-generator": "^14.0.2",
     "axios": "^1.7.7",
     "chai": "^5.1.2",
     "chai-as-promised": "^8.0.0",
@@ -39,6 +60,7 @@
     "mocha": "^10.8.2",
     "mock-require": "^3.0.3",
     "prettier": "^3.3.3",
+    "semantic-release": "^24.2.0",
     "sinon": "^19.0.2",
     "unzipper": "^0.12.3"
   },

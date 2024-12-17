@@ -1,81 +1,92 @@
-# Changelog
+# [v1.1.0](https://github.com/zhongkairen/airtable-sync-js/compare/v1.1.0...v1.0.2) (2024-12-07)
 
-## [v1.1.0]
-### Added
-- Add command option --config/-c
 
-### Changed
-- Update field only if values are different
-- Cleanup package for redundant deps and files
+### Features
 
-### Fixed
-- Sync issue for multiple fields
-- Sync issue that no changes are detected
-- Fix date parsing inconsistency in issue and record
+* Add command option --config/-c
+* Update field only if values are different
 
-### CI/CD
-- Add end-to-end testing and workflow
-- Fix issue in release workflow
-- Fix integration test config.json and tokens
-- Improve flakiness in integration tests
-- Improve trigger for pages deployment workflow
+### Refactor
 
-## [v1.0.2]
-### Changed
-- Rename bin name to `airtalbe-sync-js`
-- Rename package name to include the scope prefix
+* Cleanup package for redundant deps and files
 
-### Documentation
-- Add README
-- Add docs in `doc` directory
+### Bug Fixes
 
-### CI/CD
-- Add publishing package to GitHub package registry
-- Add a workflow to update run history of production sync
-- Add a workflow to publish run chart HTML page
-- Add a workflow to run integration tests on PR merge
-- Change unit test workflow to run only in source changes
-- Change release workflow to be triggered by the `new_release` event
+* Sync issue for multiple fields
+* Sync issue that no changes are detected
+* Fix date parsing inconsistency in issue and record
 
-## [v1.0.1]
-### Added
-- Documentation on `config.json` file
-- All MD files in `doc` folder in the package
-- Example `config.json` in the package
+### Chores
 
-### Changed
-- Replace placeholder `config.json` with `example.config.json`
-- Package folder structure, source files under `src` dir
-- Binary name to be consistent with package name `airtable-sync-js`
+* Add end-to-end testing and workflow
+* Fix issue in release workflow
+* Fix integration test config.json and tokens
+* Improve flakiness in integration tests
+* Improve trigger for pages deployment workflow
 
-### Fixed
-- Minor info log text issue when synced with no changes
+## [v1.0.2](https://github.com/zhongkairen/airtable-sync-js/compare/v1.0.2...v1.0.1) (2024-11-27)
 
-### CI/CD
-- Fix release tagging
-- Fix publishing release
-- Remove tagging exception for certain debug branches
 
-## [v1.0.0]
-### Added
-- Debug timer
-- Integration tests
-- GraphQL loaded from files
+### Features
 
-### Changed
-- Code structure
-- Improve logging of issue and record
+* Rename bin name to `airtalbe-sync-js`
+* Rename package name to include the scope prefix
 
-### Fixed
-- Log level
-- Letter case in example config file
+### Docs
 
-## [v0.1.0-prerelease]
-### Added
-- Debug logger
+* Add README
+* Add docs in `doc` directory
 
-### Changed
-- Code refactoring
+### Chores
 
-### Fixed
-- Various features
+* Add publishing package to GitHub package registry
+* Add a workflow to update run history of production sync
+* Add a workflow to publish run chart HTML page
+* Add a workflow to run integration tests on PR merge
+* Change unit test workflow to run only in source changes
+* Change release workflow to be triggered by the `new_release` event
+
+## [v1.0.1](https://github.com/zhongkairen/airtable-sync-js/compare/v1.0.1...v1.0.0) (2024-11-19)
+
+
+### Features
+
+* Documentation on `config.json` file
+* All MD files in `doc` folder in the package
+* Example `config.json` in the package
+
+### Refactor
+
+* Replace placeholder `config.json` with `example.config.json`
+* Package folder structure, source files under `src` dir
+
+### Bug Fixes
+
+* Binary name to be consistent with package name `airtable-sync-js`
+* Minor info log text issue when synced with no changes
+
+### Chores
+
+* Fix release tagging
+* Fix publishing release
+* Remove tagging exception for certain debug branches
+
+## [v1.0.0] (2024-11-18)
+
+
+### Features
+
+* Debug timer
+* Integration tests
+* GraphQL loaded from files
+
+### Refactor
+
+* Code structure
+* Improve logging of issue and record
+
+### Bug Fixes
+
+* Log level
+* Letter case in example config file
+
